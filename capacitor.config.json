@@ -1,0 +1,6 @@
+{
+  "appId": "bzh.dargio.cycloscore",
+  "appName": "CycloScore",
+  "webDir": "www",
+  "android": { "allowMixedContent": false }
+}

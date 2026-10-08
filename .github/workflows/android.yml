@@ -1,0 +1,62 @@
+name: Build Android (AAB + APK)
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install JS deps
+        run: npm ci
+
+      - name: Capacitor sync (copie l'app web dans Android)
+        run: npx cap sync android
+
+      - name: Décoder le keystore
+        run: echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/cycloscore.keystore"
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+
+      - name: Build AAB + APK signés
+        working-directory: android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :app:bundleRelease :app:assembleRelease \
+            -Pandroid.injected.signing.store.file="$RUNNER_TEMP/cycloscore.keystore" \
+            -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Upload AAB (pour le Play Store)
+        uses: actions/upload-artifact@v4
+        with:
+          name: cycloscore-release-aab
+          path: android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+
+      - name: Upload APK (pour test direct)
+        uses: actions/upload-artifact@v4
+        with:
+          name: cycloscore-release-apk
+          path: android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
