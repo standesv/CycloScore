@@ -6,6 +6,9 @@ on:
     tags: [ 'v*' ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -47,16 +50,25 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
-      - name: Upload AAB (pour le Play Store)
+      - name: Upload AAB (artifact)
         uses: actions/upload-artifact@v4
         with:
           name: cycloscore-release-aab
           path: android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
 
-      - name: Upload APK (pour test direct)
+      - name: Upload APK (artifact)
         uses: actions/upload-artifact@v4
         with:
           name: cycloscore-release-apk
           path: android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
+
+      - name: Créer la Release (sur tag v*)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: CycloScore ${{ github.ref_name }}
+          files: |
+            android/app/build/outputs/bundle/release/app-release.aab
+            android/app/build/outputs/apk/release/app-release.apk
