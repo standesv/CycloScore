@@ -13,7 +13,7 @@
    bande 7 jours, onglets Score / Détail / Lieux / Réglages, nav basse. */
 :root{
   --bg:#eef4f6; --surface:#ffffff; --surface-2:#e6eef1; --fg:#0e1f27; --muted:#55686f;
-  --line:#d3e0e5; --accent:#0d99a8; --accent-ink:#06555e;
+  --line:#d3e0e5; --accent:#0d99a8; --accent-ink:#06555e; --on-accent:#ffffff;
   --good:#15a24a; --warn:#d98300; --bad:#dc2743;
   --good-tint:rgba(21,162,74,.14); --warn-tint:rgba(217,131,0,.16); --bad-tint:rgba(220,39,67,.14);
   --shadow:0 1px 2px rgba(16,40,50,.06),0 8px 24px rgba(16,40,50,.07);
@@ -24,7 +24,7 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#09151a; --surface:#0f1f26; --surface-2:#162a32; --fg:#e6eef1; --muted:#90a6af;
-  --line:#21363e; --accent:#30d0c4; --accent-ink:#9fece5;
+  --line:#21363e; --accent:#30d0c4; --accent-ink:#9fece5; --on-accent:#04232a;
   --good:#34c776; --warn:#f0a63c; --bad:#fb5e76;
   --good-tint:rgba(52,199,118,.16); --warn-tint:rgba(240,166,60,.16); --bad-tint:rgba(251,94,118,.16);
   --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35);
@@ -32,7 +32,7 @@
 }}
 :root[data-theme="dark"]{
   --bg:#09151a; --surface:#0f1f26; --surface-2:#162a32; --fg:#e6eef1; --muted:#90a6af;
-  --line:#21363e; --accent:#30d0c4; --accent-ink:#9fece5;
+  --line:#21363e; --accent:#30d0c4; --accent-ink:#9fece5; --on-accent:#04232a;
   --good:#34c776; --warn:#f0a63c; --bad:#fb5e76;
   --good-tint:rgba(52,199,118,.16); --warn-tint:rgba(240,166,60,.16); --bad-tint:rgba(251,94,118,.16);
   --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35);
@@ -104,6 +104,12 @@ main{flex:1;padding:16px;display:flex;flex-direction:column;gap:16px}
 .sec-h{display:flex;align-items:baseline;gap:8px;margin:2px 2px -4px}
 .sec-h h2{font-size:16px;letter-spacing:.03em;text-transform:uppercase;font-weight:600}
 .sec-h .hint{font-size:12.5px;color:var(--muted);margin-left:auto}
+/* matériel conseillé */
+.gearcard{padding:12px}
+.gearwrap{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-weight:600;font-size:13.5px}
+.chip svg{width:15px;height:15px}
+.gear-none{color:var(--muted);font-size:13.5px;padding:4px 2px}
 /* hourly chart */
 .hourly{padding:14px 12px 10px}
 .rangeswitch{display:flex;gap:4px;margin:0 2px 8px;justify-content:flex-end}
@@ -255,6 +261,9 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         <div class="reason" id="reason">On récupère les conditions…</div>
         <div class="alert" id="alertBox"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 2 20h20L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span id="alertText"></span></div>
       </div>
+
+      <div class="sec-h"><h2>Matériel conseillé</h2><span class="hint" id="gearHint"></span></div>
+      <div class="card gearcard"><div class="gearwrap" id="gear"></div></div>
 
       <div class="sec-h"><h2>Prochaines heures</h2><span class="hint" id="nowLabel"></span></div>
       <div class="card hourly">
@@ -413,20 +422,26 @@ function scoreHour(h, mode, sens){
   let base = 100 * (s.rain*w.rain + s.wind*w.wind + s.temp*w.temp + s.vis*w.vis + s.humuv*w.humuv);
 
   // qualité de l'air (facteur additionnel) si dispo
+  let cAir = 1;
   if(typeof h.aqi === "number"){
-    const cAir = 1 - 0.3*clamp((h.aqi-60)/90);
+    cAir = 1 - 0.3*clamp((h.aqi-60)/90);
     base *= cAir;
   }
 
-  // coefficients de sécurité : plafonnent le score
+  // dangers : plafonnent fort ET déclenchent une alerte
   const caps = [];
   let cap = 100;
   if(h.feels <= 0.5 && (h.hum >= 85 || h.rain > 0.1)){ cap = Math.min(cap,20); caps.push("Risque de verglas"); }
   if(h.code>=95){ cap = Math.min(cap,15); caps.push("Orage annoncé"); }
   if(h.gust > 60){ cap = Math.min(cap,25); caps.push("Rafales violentes"); }
 
-  const score = Math.round(Math.min(base, cap));
-  return {score, sub:s, caps, capped: cap<100};
+  // plafond pluie : une averse ne peut pas donner un bon score
+  if(h.rain >= 4) cap = Math.min(cap, 38);
+  else if(h.rain >= 1.5) cap = Math.min(cap, 55);
+  else if(h.rain >= 0.4 || (h.prob >= 70 && h.rain >= 0.1)) cap = Math.min(cap, 68);
+
+  const score = Math.round(clamp(Math.min(base, cap), 0, 100));
+  return {score, sub:s, caps, cair:cAir, capped: cap<100};
 }
 
 /* ---- bande de couleur + verdict ---- */
@@ -478,6 +493,7 @@ function weatherIcon(cat){
     case "rain": return `<svg viewBox="0 0 24 24"><path d="M7 14h9a3.5 3.5 0 0 0 .4-7 5.5 5.5 0 0 0-10.6 1.3A3 3 0 0 0 7 14Z" ${s}/><path d="M8 17l-1 3M12 17l-1 3M16 17l-1 3" ${s}/></svg>`;
     case "snow": return `<svg viewBox="0 0 24 24"><path d="M7 13h9a3.5 3.5 0 0 0 .4-7 5.5 5.5 0 0 0-10.6 1.3A3 3 0 0 0 7 13Z" ${s}/><path d="M9 17h.01M12 19h.01M15 17h.01" ${s}/></svg>`;
     case "storm": return `<svg viewBox="0 0 24 24"><path d="M7 13h9a3.5 3.5 0 0 0 .4-7 5.5 5.5 0 0 0-10.6 1.3A3 3 0 0 0 7 13Z" ${s}/><path d="M12 13l-2 4h3l-2 4" ${s}/></svg>`;
+    case "air": return `<svg viewBox="0 0 24 24"><path d="M3 8h11a2.5 2.5 0 1 0-2.5-2.5" ${s}/><path d="M3 12h15a2.5 2.5 0 1 1-2.5 2.5" ${s}/><path d="M3 16h8a2 2 0 1 1-2 2" ${s}/></svg>`;
   }
   return "";
 }
@@ -489,6 +505,32 @@ function dnear(d){
   const b=new Date(d.getFullYear(),d.getMonth(),d.getDate());
   const diff=Math.round((b-a)/86400000);
   return diff<=0?"" : diff===1?"demain " : diff===2?"après-demain " : (d.toLocaleDateString("fr-FR",{weekday:"short"})+" ");
+}
+
+/* ---- qualité de l'air (European AQI) ---- */
+function aqiLabel(a){
+  if(a<=20) return "très bon"; if(a<=40) return "bon"; if(a<=60) return "moyen";
+  if(a<=80) return "médiocre"; if(a<=100) return "mauvais"; return "très mauvais";
+}
+
+/* ---- matériel conseillé : signaux qui s'activent selon les conditions + le mode ---- */
+const GEAR = [
+  { label:"Veste de pluie",        modes:["taff","sport"], test:h => h.rain>=0.3 || h.prob>=60 },
+  { label:"Garde-boue",            modes:["taff"],         test:h => h.rain>=0.2 || h.prob>=60 },
+  { label:"Éclairage",             modes:["taff","sport"], test:h => !h.isDay || h.vis<4000 },
+  { label:"Gilet réfléchissant",   modes:["taff"],         test:h => !h.isDay || h.vis<4000 },
+  { label:"Coupe-vent",            modes:["taff","sport"], test:h => h.wind>=30 || h.gust>=45 },
+  { label:"Gants",                 modes:["taff","sport"], test:h => h.feels<=8 },
+  { label:"Tour de cou",           modes:["taff","sport"], test:h => h.feels<=5 },
+  { label:"Collant long",          modes:["sport"],        test:h => h.feels<=10 },
+  { label:"Sur-chaussures",        modes:["sport"],        test:h => h.feels<=7 || (h.rain>=0.3 && h.feels<=12) },
+  { label:"Lunettes de soleil",    modes:["sport"],        test:h => h.isDay && h.uv>=4 && h.rain<0.1 },
+  { label:"Crème solaire",         modes:["sport"],        test:h => h.uv>=6 },
+  { label:"Hydratation +",         modes:["sport"],        test:h => h.feels>=24 },
+  { label:"Prudence (air pollué)", modes:["taff","sport"], test:h => typeof h.aqi==="number" && h.aqi>=80 }
+];
+function gearCheck(){
+  return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
 /* ============================================================
@@ -511,7 +553,7 @@ function normalize(json){
     hum: H.relative_humidity_2m?.[i] ?? 60,
     code: H.weather_code?.[i] ?? 0,
     isDay: (H.is_day?.[i] ?? 1) === 1,
-    aqi: undefined
+    aqi: H.european_aqi?.[i]
   }));
   const days = D.time.map((t,i)=>({
     date:new Date(t+"T12:00"),
@@ -537,9 +579,9 @@ function localISO(d){
 function sampleData(){
   const H={time:[],temperature_2m:[],apparent_temperature:[],precipitation:[],precipitation_probability:[],
     wind_speed_10m:[],wind_gusts_10m:[],wind_direction_10m:[],visibility:[],uv_index:[],relative_humidity_2m:[],
-    weather_code:[],is_day:[]};
+    weather_code:[],is_day:[],european_aqi:[]};
   const start = new Date(); start.setMinutes(0,0,0);
-  for(let i=0;i<48;i++){
+  for(let i=0;i<168;i++){
     const d=new Date(start.getTime()+i*3600000);
     const hr=d.getHours();
     const dayPart = Math.sin((hr-9)/24*Math.PI*2);
@@ -552,7 +594,7 @@ function sampleData(){
     else if(hr>=16 && hr<=20){ rain=1.2; prob=70; code=80; wind=26; gust=46; }  // averses + vent en soirée
     else { rain=0; prob=8; code=0; wind=8; gust=14; }                          // nuit calme
     if(i>=38 && i<=42){ code=95; rain=3; prob=85; wind=30; gust=55; }           // orage J2 (visible en 48 h)
-    const uv = isDay? Math.max(0, Math.round((2.5 + 2*dayPart)*10)/10) : 0;
+    const uv = isDay? Math.max(0, Math.round((3.5 + 3*dayPart)*10)/10) : 0;
     H.time.push(localISO(d));
     H.temperature_2m.push(temp);
     H.apparent_temperature.push(Math.round((temp - wind*0.06)*10)/10);
@@ -566,6 +608,7 @@ function sampleData(){
     H.relative_humidity_2m.push(rain>0?88:68);
     H.weather_code.push(code);
     H.is_day.push(isDay);
+    H.european_aqi.push(28 + (isDay?0:8) + (wind<10?14:0) + (i>=20&&i<=26?34:0));
   }
   const D={time:[],weather_code:[],temperature_2m_max:[],temperature_2m_min:[]};
   const codes=[61,3,80,1,0,2,3], tmax=[14,15,13,17,19,16,15], tmin=[8,9,7,10,11,9,8];
@@ -633,6 +676,7 @@ function render(){
   $("#sampleBadge").hidden = !state.isSample;
   $("#locName").textContent = state.loc ? state.loc.name : "Exemple";
   renderScore();
+  renderGear();
   renderHourly();
   renderDaily();
   renderDetail();
@@ -660,6 +704,20 @@ function renderScore(){
   else a.classList.remove("show");
   const t = h.date;
   $("#nowLabel").textContent = "maintenant · " + t.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+}
+
+function renderGear(){
+  const i = nowIndex();
+  const h = state.data.hours[i];
+  const items = GEAR.filter(g => g.modes.includes(state.mode) && g.test(h));
+  const box = $("#gear");
+  if(!items.length){
+    box.innerHTML = `<div class="gear-none">Tenue classique — rien de particulier à prévoir.</div>`;
+    $("#gearHint").textContent = "";
+    return;
+  }
+  $("#gearHint").textContent = state.mode==="taff" ? "pour ton trajet" : "pour ta sortie";
+  box.innerHTML = items.map(g => `<span class="chip">${gearCheck()}${g.label}</span>`).join("");
 }
 
 function seriesFromNow(){
@@ -747,11 +805,15 @@ function renderDaily(){
   state.data.days.slice(0,7).forEach((d)=>{
     const key=d.date.toDateString();
     const hrs=(byDay[key]||[]).filter(h=>{const x=h.date.getHours();return x>=8&&x<=20;});
-    let avg=null, bestH=null, bestS=-1;
+    let avg=null;
     if(hrs.length){
-      let sum=0;
-      hrs.forEach(h=>{const s=scoreHour(h,state.mode,state.sens).score; sum+=s; if(s>bestS){bestS=s;bestH=h;}});
-      avg=Math.round(sum/hrs.length);
+      // on mélange la moyenne de journée avec le pire tiers : des averses
+      // en milieu de journée doivent tirer le score du jour vers le bas.
+      const arr=hrs.map(h=>scoreHour(h,state.mode,state.sens).score).sort((a,b)=>a-b);
+      const mean=arr.reduce((s,x)=>s+x,0)/arr.length;
+      const k=Math.max(1,Math.ceil(arr.length/3));
+      const worst=arr.slice(0,k).reduce((s,x)=>s+x,0)/k;
+      avg=Math.round(0.55*mean + 0.45*worst);
     }
     const b=band(avg==null?0:avg);
     const w=wmo(d.code);
@@ -776,9 +838,12 @@ function renderDetail(){
     {ic:"wind", l:"Vent", v:`${Math.round(h.wind)} km/h ${dirName(h.dir)} · raf. ${Math.round(h.gust)}`, s:res.sub.wind},
     {ic:"temp", l:"Ressenti", v:`${Math.round(h.feels)}° (réel ${Math.round(h.temp)}°)`, s:res.sub.temp},
     {ic:"vis", l:"Visibilité", v:`${(h.vis/1000).toFixed(0)} km · ${h.isDay?"jour":"nuit"}`, s:res.sub.vis},
-    {ic:"humuv", l:"Humidité / UV", v:`${h.hum}% · UV ${h.uv.toFixed(0)}${typeof h.aqi==="number"?` · air ${Math.round(h.aqi)}`:""}`, s:res.sub.humuv}
+    {ic:"humuv", l:"Humidité / UV", v:`${h.hum}% · UV ${h.uv.toFixed(0)}`, s:res.sub.humuv}
   ];
-  const ICON={rain:"rain",wind:"storm",temp:"clear",vis:"fog",humuv:"cloud"};
+  if(typeof h.aqi==="number"){
+    rows.push({ic:"air", l:"Qualité de l'air", v:`AQI ${Math.round(h.aqi)} · ${aqiLabel(h.aqi)}`, s:clamp(1-(h.aqi-20)/100)});
+  }
+  const ICON={rain:"rain",wind:"storm",temp:"clear",vis:"fog",humuv:"cloud",air:"air"};
   const box=$("#cond"); box.innerHTML="";
   rows.forEach(r=>{
     const pct=Math.round(r.s*100);

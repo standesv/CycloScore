@@ -19,3 +19,6 @@ keystore.properties
 # Divers
 .DS_Store
 *.log
+
+# Notes de mots de passe (ne jamais committer)
+cl*.txt
