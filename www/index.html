@@ -39,6 +39,7 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{height:100%}
 body{
   margin:0;background:var(--bg);color:var(--fg);
@@ -390,7 +391,7 @@ function subScores(h, mode, sens){
 
   // pluie : intensité (mm/h) + probabilité
   const fromMm = 1 - clamp((h.rain - Math.max(0,rainTol)) / 4);
-  const fromProb = 1 - 0.45 * clamp(h.prob/100);
+  const fromProb = 1 - 0.6 * clamp(h.prob/100);
   const rain = clamp(Math.min(fromMm, fromProb));
 
   // vent : vitesse soutenue et rafales (km/h), confort jusqu'à ~10
@@ -435,10 +436,20 @@ function scoreHour(h, mode, sens){
   if(h.code>=95){ cap = Math.min(cap,15); caps.push("Orage annoncé"); }
   if(h.gust > 60){ cap = Math.min(cap,25); caps.push("Rafales violentes"); }
 
-  // plafond pluie : une averse ne peut pas donner un bon score
-  if(h.rain >= 4) cap = Math.min(cap, 38);
-  else if(h.rain >= 1.5) cap = Math.min(cap, 55);
-  else if(h.rain >= 0.4 || (h.prob >= 70 && h.rain >= 0.1)) cap = Math.min(cap, 68);
+  // plafond selon le TYPE de temps (code WMO) : une heure "pluie" ne peut pas bien scorer,
+  // ce qui écarte nettement une journée pluvieuse d'une journée ensoleillée.
+  let codeCeil = 100;
+  if(h.code>=71 && h.code<=77) codeCeil = 40;       // neige
+  else if(h.code>=85 && h.code<=86) codeCeil = 42;  // averses de neige
+  else if(h.code>=61 && h.code<=67) codeCeil = 50;  // pluie
+  else if(h.code>=80 && h.code<=82) codeCeil = 56;  // averses
+  else if(h.code>=51 && h.code<=57) codeCeil = 66;  // bruine
+  cap = Math.min(cap, codeCeil);
+
+  // plafond selon l'intensité de pluie mesurée
+  if(h.rain >= 4) cap = Math.min(cap, 36);
+  else if(h.rain >= 1.5) cap = Math.min(cap, 48);
+  else if(h.rain >= 0.4 || (h.prob >= 65 && h.rain >= 0.1)) cap = Math.min(cap, 60);
 
   const score = Math.round(clamp(Math.min(base, cap), 0, 100));
   return {score, sub:s, caps, cair:cAir, capped: cap<100};
@@ -559,7 +570,9 @@ function normalize(json){
     date:new Date(t+"T12:00"),
     code: D.weather_code[i],
     tmax: D.temperature_2m_max[i],
-    tmin: D.temperature_2m_min[i]
+    tmin: D.temperature_2m_min[i],
+    sunrise: D.sunrise?.[i],
+    sunset: D.sunset?.[i]
   }));
   return {hours, days, tz: json.timezone};
 }
@@ -580,49 +593,67 @@ function sampleData(){
   const H={time:[],temperature_2m:[],apparent_temperature:[],precipitation:[],precipitation_probability:[],
     wind_speed_10m:[],wind_gusts_10m:[],wind_direction_10m:[],visibility:[],uv_index:[],relative_humidity_2m:[],
     weather_code:[],is_day:[],european_aqi:[]};
-  const start = new Date(); start.setMinutes(0,0,0);
+  // un archétype météo par jour (jour 0 = aujourd'hui) pour des scores bien différenciés
+  const ARCH=[
+    {code:1, rain:0,   prob:12, wind:12, gust:20, tmax:18, tmin:10}, // aujourd'hui : ensoleillé
+    {code:63,rain:1.6, prob:85, wind:17, gust:30, tmax:14, tmin:8},  // pluie
+    {code:0, rain:0,   prob:5,  wind:10, gust:18, tmax:19, tmin:9},  // ciel clair
+    {code:80,rain:0.8, prob:70, wind:20, gust:40, tmax:16, tmin:11}, // averses
+    {code:3, rain:0,   prob:25, wind:14, gust:24, tmax:15, tmin:9},  // couvert sec
+    {code:2, rain:0,   prob:20, wind:31, gust:52, tmax:15, tmin:9},  // venteux
+    {code:61,rain:1.2, prob:80, wind:16, gust:28, tmax:14, tmin:8}   // pluie
+  ];
+  const pad=n=>String(n).padStart(2,"0");
+  const start=new Date(); start.setMinutes(0,0,0);
+  const start0=new Date(start); start0.setHours(0,0,0,0);
   for(let i=0;i<168;i++){
     const d=new Date(start.getTime()+i*3600000);
     const hr=d.getHours();
-    const dayPart = Math.sin((hr-9)/24*Math.PI*2);
-    const temp = Math.round((11 + 5*dayPart + (i>24?1.5:0))*10)/10;
+    const dmid=new Date(d); dmid.setHours(0,0,0,0);
+    const di=Math.min(6, Math.max(0, Math.round((dmid-start0)/86400000)));
+    const a=ARCH[di];
     const isDay = hr>=8 && hr<=19 ? 1:0;
-    // scénario : matin couvert/averses, après-midi éclaircies, nuit calme, J2 venteux
-    let rain=0, prob=10, code=1, wind=12, gust=22;
-    if(hr>=6 && hr<=9){ rain=0.8; prob=75; code=61; wind=16; gust=28; }        // pluie du matin
-    else if(hr>=10 && hr<=15){ rain=0; prob=20; code=2; wind=14; gust=26; }     // belle fenêtre de journée
-    else if(hr>=16 && hr<=20){ rain=1.2; prob=70; code=80; wind=26; gust=46; }  // averses + vent en soirée
-    else { rain=0; prob=8; code=0; wind=8; gust=14; }                          // nuit calme
-    if(i>=38 && i<=42){ code=95; rain=3; prob=85; wind=30; gust=55; }           // orage J2 (visible en 48 h)
-    const uv = isDay? Math.max(0, Math.round((3.5 + 3*dayPart)*10)/10) : 0;
+    const dayPart=Math.sin((hr-9)/24*Math.PI*2);
+    const temp=Math.round((a.tmin + (a.tmax-a.tmin)*(0.5+0.5*dayPart))*10)/10;
+    let code, rain, prob, wind, gust;
+    if(isDay){
+      code=a.code; wind=a.wind; gust=a.gust; prob=a.prob;
+      rain = a.rain>0 ? Math.max(0, a.rain*(0.5+0.9*Math.abs(Math.sin((hr+di)*1.3)))) : 0;
+      if(a.rain>0 && rain<0.1) code = 3; // courte accalmie dans une journée pluvieuse
+    } else {
+      code = a.rain>0 ? 3 : 0; rain=0; prob=Math.round(a.prob*0.4); wind=Math.round(a.wind*0.6); gust=Math.round(a.gust*0.6);
+    }
+    rain=Math.round(rain*10)/10;
+    const uvBase = a.code<=1?6 : a.code<=3?3 : 1.5;
+    const uv = isDay? Math.max(0, Math.round((uvBase*(0.4+0.6*Math.max(0,dayPart)))*10)/10) : 0;
     H.time.push(localISO(d));
     H.temperature_2m.push(temp);
     H.apparent_temperature.push(Math.round((temp - wind*0.06)*10)/10);
     H.precipitation.push(rain);
-    H.precipitation_probability.push(prob);
-    H.wind_speed_10m.push(wind);
-    H.wind_gusts_10m.push(gust);
+    H.precipitation_probability.push(Math.round(prob));
+    H.wind_speed_10m.push(Math.round(wind));
+    H.wind_gusts_10m.push(Math.round(gust));
     H.wind_direction_10m.push(240 + (i%5)*8);
-    H.visibility.push(code>=45&&code<=48?1200 : rain>0?7000:20000);
+    H.visibility.push(rain>0?7000:20000);
     H.uv_index.push(uv);
-    H.relative_humidity_2m.push(rain>0?88:68);
+    H.relative_humidity_2m.push(rain>0?88:(a.code<=1?60:70));
     H.weather_code.push(code);
     H.is_day.push(isDay);
-    H.european_aqi.push(28 + (isDay?0:8) + (wind<10?14:0) + (i>=20&&i<=26?34:0));
+    H.european_aqi.push(28 + (isDay?0:8) + (wind<10?14:0) + (di===5?24:0));
   }
-  const D={time:[],weather_code:[],temperature_2m_max:[],temperature_2m_min:[]};
-  const codes=[61,3,80,1,0,2,3], tmax=[14,15,13,17,19,16,15], tmin=[8,9,7,10,11,9,8];
+  const D={time:[],weather_code:[],temperature_2m_max:[],temperature_2m_min:[],sunrise:[],sunset:[]};
   for(let i=0;i<7;i++){
     const d=new Date(start.getTime()+i*86400000);
-    const p=n=>String(n).padStart(2,"0");
-    D.time.push(`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`);
-    D.weather_code.push(codes[i]); D.temperature_2m_max.push(tmax[i]); D.temperature_2m_min.push(tmin[i]);
+    const ds=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    D.time.push(ds); D.weather_code.push(ARCH[i].code);
+    D.temperature_2m_max.push(ARCH[i].tmax); D.temperature_2m_min.push(ARCH[i].tmin);
+    D.sunrise.push(ds+"T08:05"); D.sunset.push(ds+"T19:10");
   }
   return {hourly:H, daily:D, timezone:"local"};
 }
 
 const FC_HOURLY = "temperature_2m,apparent_temperature,precipitation,precipitation_probability,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,visibility,uv_index,relative_humidity_2m,is_day";
-const FC_DAILY = "weather_code,temperature_2m_max,temperature_2m_min";
+const FC_DAILY = "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset";
 
 async function loadWeather(loc){
   setLoading(true);
@@ -751,7 +782,7 @@ function renderHourly(){
   // meilleures fenêtres (≥70 contiguës)
   let best=null, cur=null;
   data.forEach((p,k)=>{
-    if(p.s>=70){ if(!cur) cur={a:k,b:k}; else cur.b=k; }
+    if(p.s>=70 && p.h.isDay){ if(!cur) cur={a:k,b:k}; else cur.b=k; }
     else { if(cur){ if(!best || (cur.b-cur.a)>(best.b-best.a)) best=cur; cur=null; } }
   });
   if(cur && (!best || (cur.b-cur.a)>(best.b-best.a))) best=cur;
@@ -804,7 +835,8 @@ function renderDaily(){
   });
   state.data.days.slice(0,7).forEach((d)=>{
     const key=d.date.toDateString();
-    const hrs=(byDay[key]||[]).filter(h=>{const x=h.date.getHours();return x>=8&&x<=20;});
+    // uniquement les heures de JOUR (entre lever et coucher du soleil)
+    const hrs=(byDay[key]||[]).filter(h=>h.isDay);
     let avg=null;
     if(hrs.length){
       // on mélange la moyenne de journée avec le pire tiers : des averses
@@ -813,7 +845,7 @@ function renderDaily(){
       const mean=arr.reduce((s,x)=>s+x,0)/arr.length;
       const k=Math.max(1,Math.ceil(arr.length/3));
       const worst=arr.slice(0,k).reduce((s,x)=>s+x,0)/k;
-      avg=Math.round(0.55*mean + 0.45*worst);
+      avg=Math.round(0.45*mean + 0.55*worst);
     }
     const b=band(avg==null?0:avg);
     const w=wmo(d.code);
@@ -843,16 +875,28 @@ function renderDetail(){
   if(typeof h.aqi==="number"){
     rows.push({ic:"air", l:"Qualité de l'air", v:`AQI ${Math.round(h.aqi)} · ${aqiLabel(h.aqi)}`, s:clamp(1-(h.aqi-20)/100)});
   }
-  const ICON={rain:"rain",wind:"storm",temp:"clear",vis:"fog",humuv:"cloud",air:"air"};
+  // lever / coucher du soleil (ligne d'info, sans contribution)
+  const today = state.data.days.find(d => d.date.toDateString()===h.date.toDateString()) || state.data.days[0];
+  if(today && today.sunrise){
+    const ft = t => new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+    rows.push({ic:"sun", l:"Soleil", v:`lever ${ft(today.sunrise)} · coucher ${ft(today.sunset)}`, s:null});
+  }
+  const ICON={rain:"rain",wind:"storm",temp:"clear",vis:"fog",humuv:"cloud",air:"air",sun:"clear"};
   const box=$("#cond"); box.innerHTML="";
   rows.forEach(r=>{
-    const pct=Math.round(r.s*100);
-    const col = r.s>=0.7?"var(--good)":r.s>=0.4?"var(--warn)":"var(--bad)";
     const el=document.createElement("div"); el.className="cond-row";
+    let contrib;
+    if(r.s===null){
+      contrib = `<span class="cond-contrib"><span class="pct">${h.isDay?"jour":"nuit"}</span></span>`;
+    }else{
+      const pct=Math.round(r.s*100);
+      const col = r.s>=0.7?"var(--good)":r.s>=0.4?"var(--warn)":"var(--bad)";
+      contrib = `<span class="cond-contrib"><span class="pct">${pct}%</span><div class="cbar"><i style="width:${pct}%;background:${col}"></i></div></span>`;
+    }
     el.innerHTML=
       `<span class="cond-ic">${weatherIcon(ICON[r.ic])}</span>`+
       `<span class="cond-main"><span class="l">${r.l}</span><div class="v">${r.v}</div></span>`+
-      `<span class="cond-contrib"><span class="pct">${pct}%</span><div class="cbar"><i style="width:${pct}%;background:${col}"></i></div></span>`;
+      contrib;
     box.appendChild(el);
   });
 }
