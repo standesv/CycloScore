@@ -22,3 +22,6 @@ keystore.properties
 
 # Notes de mots de passe (ne jamais committer)
 cl*.txt
+
+# Dossier généré par l'app, à ne pas committer
+/Claude outputs/

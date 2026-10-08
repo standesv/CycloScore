@@ -220,6 +220,38 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   opacity:0;pointer-events:none;transition:.25s;z-index:50;max-width:90%;
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* bandeau publicitaire (placeholder web ; AdMob natif sur appareil) */
+.adslot{position:fixed;left:0;right:0;bottom:0;z-index:40;height:calc(56px + env(safe-area-inset-bottom,0px));
+  padding-bottom:env(safe-area-inset-bottom,0px);display:flex;align-items:center;justify-content:center;
+  background:var(--surface-2);border-top:1px solid var(--line);color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+body.has-ad .nav{bottom:calc(56px + env(safe-area-inset-bottom,0px));padding-bottom:0}
+body.has-ad .app{padding-bottom:calc(72px + 56px)}
+/* onboarding */
+#onboard{position:fixed;inset:0;z-index:120;background:var(--bg);display:flex;flex-direction:column;
+  padding:calc(20px + env(safe-area-inset-top,0px)) 20px calc(20px + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto}
+.ob-dots{display:flex;gap:6px;justify-content:center;margin-bottom:14px}
+.ob-dots i{width:7px;height:7px;border-radius:50%;background:var(--line);transition:.2s}
+.ob-dots i.on{background:var(--accent);width:20px;border-radius:4px}
+.ob-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;justify-content:center}
+.ob-step{display:none;flex-direction:column;gap:14px;animation:obIn .25s ease}
+.ob-step.active{display:flex}
+@keyframes obIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.ob-step h1{font-family:var(--display);font-size:27px;font-weight:700;text-wrap:balance}
+.ob-step .sub{color:var(--muted);font-size:15px;margin-top:-6px}
+.ob-mark{width:64px;height:64px;border-radius:16px;align-self:flex-start}
+.ob-choice{display:flex;flex-direction:column;gap:10px}
+.ob-opt{display:flex;align-items:center;gap:12px;padding:15px 16px;border:1.5px solid var(--line);border-radius:14px;background:var(--surface);text-align:left;font-size:15.5px;font-weight:600}
+.ob-opt .d{font-weight:400;font-size:13px;color:var(--muted);margin-top:2px}
+.ob-opt[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+.ob-opt .tick{margin-left:auto;color:var(--accent);opacity:0;flex:none}
+.ob-opt[aria-pressed="true"] .tick{opacity:1}
+.ob-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0}
+.ob-row+.ob-row{border-top:1px solid var(--line)}
+.ob-row .t{font-weight:600}.ob-row .d{font-size:12.5px;color:var(--muted)}
+.ob-slider{width:150px}
+.ob-nav{display:flex;gap:10px;margin-top:16px}
+.ob-nav .btn{flex:1;padding:14px}
+.ob-legal{font-size:12px;color:var(--muted);line-height:1.5}
 </style>
 </head>
 <body>
@@ -371,6 +403,13 @@ input[type=range]{width:100%;accent-color:var(--accent)}
           </div>
         </div>
         <div class="set-row">
+          <div class="s-l"><div class="t">Publicité</div><div class="d">personnalisée ou non</div></div>
+          <div class="seg" role="group" aria-label="Publicité">
+            <button data-ad-opt="personalized" aria-pressed="false">Perso.</button>
+            <button data-ad-opt="nonpersonalized" aria-pressed="false">Non perso.</button>
+          </div>
+        </div>
+        <div class="set-row">
           <div class="s-l"><div class="t">Réinitialiser</div><div class="d">efface réglages et lieux</div></div>
           <button class="btn ghost" id="btnReset">Effacer</button>
         </div>
@@ -387,6 +426,82 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   </nav>
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- bandeau publicitaire (placeholder sur le web ; AdMob sur appareil) -->
+<div class="adslot" id="adSlot" hidden><span>Publicité</span></div>
+
+<!-- onboarding première ouverture -->
+<div id="onboard" hidden>
+  <div class="ob-dots" id="obDots"></div>
+  <div class="ob-body">
+
+    <div class="ob-step" data-step="0">
+      <svg class="ob-mark" viewBox="0 0 108 108" aria-hidden="true">
+        <defs><linearGradient id="obSky" x1="8" y1="6" x2="100" y2="104" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#27b7cb"/><stop offset="1" stop-color="#0a6580"/></linearGradient></defs>
+        <rect width="108" height="108" rx="26" fill="url(#obSky)"/>
+        <g transform="matrix(0.94 0 0 0.94 11 3)">
+          <g stroke="#FFCB52" stroke-width="3.6" stroke-linecap="round"><line x1="39" y1="17" x2="39" y2="24"/><line x1="23" y1="23" x2="28" y2="28"/><line x1="17" y1="39" x2="24" y2="39"/><line x1="23" y1="55" x2="28" y2="50"/><line x1="55" y1="23" x2="50" y2="28"/></g>
+          <circle cx="39" cy="39" r="11.5" fill="#FFCB52"/>
+          <path d="M45 58 a10 10 0 0 1 1.5 -19.6 a13 13 0 0 1 24.5 3.2 a9 9 0 0 1 -2.4 16.4 z" fill="#fff"/>
+          <circle cx="57" cy="72" r="17.5" fill="none" stroke="#fff" stroke-width="5"/><circle cx="57" cy="72" r="3" fill="#fff"/>
+          <g stroke="#fff" stroke-width="2" stroke-linecap="round"><line x1="57" y1="72" x2="57" y2="56.5"/><line x1="57" y1="72" x2="70.5" y2="64.5"/><line x1="57" y1="72" x2="70.5" y2="79.5"/><line x1="57" y1="72" x2="57" y2="87.5"/><line x1="57" y1="72" x2="43.5" y2="79.5"/><line x1="57" y1="72" x2="43.5" y2="64.5"/></g>
+        </g>
+      </svg>
+      <h1>Bienvenue sur CycloScore</h1>
+      <p class="sub">Un score simple pour savoir quand enfourcher le vélo — trajet boulot ou sortie sportive.</p>
+      <p class="sub">On règle l'essentiel en 30 secondes.</p>
+    </div>
+
+    <div class="ob-step" data-step="1">
+      <h1>Comment roules-tu&nbsp;?</h1>
+      <p class="sub">On adapte le score et les conseils à ton usage.</p>
+      <div class="ob-choice">
+        <button class="ob-opt" data-usage="taff" aria-pressed="false"><span><span class="tt">Vélo taff</span><div class="d">trajets domicile-travail</div></span><svg class="tick" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="ob-opt" data-usage="sport" aria-pressed="false"><span><span class="tt">Sortie sportive</span><div class="d">entraînement, loisir</div></span><svg class="tick" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="ob-opt" data-usage="both" aria-pressed="true"><span><span class="tt">Les deux</span><div class="d">je bascule selon le jour</div></span><svg class="tick" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+
+    <div class="ob-step" data-step="2">
+      <h1>Tes horaires de travail</h1>
+      <p class="sub">Pour te donner la meilleure heure de départ, aller et retour.</p>
+      <div class="ob-row"><div><div class="t">Début de journée</div><div class="d">arrivée au travail</div></div><input type="time" id="obStart" class="timein" value="09:00"></div>
+      <div class="ob-row"><div><div class="t">Fin de journée</div><div class="d">départ du travail</div></div><input type="time" id="obEnd" class="timein" value="17:00"></div>
+      <div class="ob-row"><div><div class="t">Temps de trajet</div><div class="d">un aller simple</div></div><div class="durwrap"><input type="range" id="obDur" min="5" max="60" step="5" value="20"><span id="obDurVal">20 min</span></div></div>
+    </div>
+
+    <div class="ob-step" data-step="3">
+      <h1>Ta sensibilité</h1>
+      <p class="sub">Ça ajuste le score et le matériel conseillé à ton confort.</p>
+      <div class="ob-row"><div><div class="t">Au froid</div><div class="d">à droite = frileux</div></div><input class="ob-slider" type="range" id="obCold" min="-6" max="6" value="0"></div>
+      <div class="ob-row"><div><div class="t">À la pluie</div><div class="d">à gauche = plus strict</div></div><input class="ob-slider" type="range" id="obRain" min="-5" max="5" value="0"></div>
+      <div class="ob-row"><div><div class="t">Au vent</div><div class="d">à gauche = plus strict</div></div><input class="ob-slider" type="range" id="obWind" min="-5" max="5" value="0"></div>
+    </div>
+
+    <div class="ob-step" data-step="4">
+      <h1>Ta localisation</h1>
+      <p class="sub">Pour la météo réelle. Tu pourras aussi chercher une ville plus tard.</p>
+      <button class="btn" id="obGeo" style="width:100%"><svg viewBox="0 0 24 24" width="17" height="17" fill="none"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Me localiser</button>
+      <button class="btn ghost" id="obLater" style="width:100%">Plus tard</button>
+      <p class="ob-legal" id="obGeoStatus"></p>
+    </div>
+
+    <div class="ob-step" data-step="5">
+      <h1>Gratuit, avec une pub</h1>
+      <p class="sub">CycloScore reste gratuit grâce à un petit bandeau publicitaire en bas de l'écran.</p>
+      <div class="ob-choice">
+        <button class="ob-opt" data-consent="personalized" aria-pressed="true"><span><span class="tt">Accepter les pubs personnalisées</span><div class="d">pubs plus pertinentes</div></span><svg class="tick" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="ob-opt" data-consent="nonpersonalized" aria-pressed="false"><span><span class="tt">Pub non personnalisée</span><div class="d">sans suivi publicitaire</div></span><svg class="tick" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <p class="ob-legal">Tu peux changer d'avis à tout moment dans Réglages. La géolocalisation ne sert qu'à récupérer la météo et n'est pas conservée sur un serveur.</p>
+    </div>
+
+  </div>
+  <div class="ob-nav">
+    <button id="obBack" class="btn ghost" hidden>Retour</button>
+    <button id="obNext" class="btn">Suivant</button>
+  </div>
+</div>
 
 <script>
 "use strict";
@@ -409,6 +524,8 @@ const state = {
   theme: store.get("theme","auto"),
   sens: store.get("sens", {cold:0, rain:0, wind:0}),
   work: store.get("work", {start:"09:00", end:"17:00", duration:20}),
+  onboarded: store.get("onboarded", false),
+  adConsent: store.get("adConsent", null),   // "personalized" | "nonpersonalized" | null
   data: null,                           // forecast normalisé
   isSample: true,
   focus: null,                          // heure de référence (trajet en mode taff)
@@ -567,24 +684,28 @@ function aqiLabel(a){
 }
 
 /* ---- matériel conseillé : signaux qui s'activent selon les conditions + le mode ---- */
-/* prédicats partagés avec la logique du score, pour rester cohérents */
-const isRainy  = h => h.rain>=0.2 || h.prob>=55 || (h.code>=51 && h.code<=82);
-const isWindy  = h => Math.max(h.wind, h.gust*0.8) >= 22;   // ≈ "vent soutenu" dans le score
-const isStrongWind = h => h.gust>=55 || h.wind>=40;
-const isCold   = h => h.feels<=8;
-const isVCold  = h => h.feels<=4;
-const isDark   = h => !h.isDay || h.vis<4000;
+/* Les seuils bougent avec les réglages de sensibilité (frilosité / pluie / vent) :
+   plus on est frileux ou strict, plus le matériel est conseillé tôt. */
+const S = s => s || {cold:0, rain:0, wind:0};
+const isRainy = (h,s)=>{ s=S(s);
+  return h.rain >= Math.max(0.05, 0.2 + s.rain*0.03)
+      || h.prob >= (55 + s.rain*4)
+      || (h.code>=51 && h.code<=82); };
+const isWindy = (h,s)=>{ s=S(s); return Math.max(h.wind, h.gust*0.8) >= (22 + s.wind*1.5); };
+const isCold  = (h,s)=> h.feels <= (8 + S(s).cold);
+const isVCold = (h,s)=> h.feels <= (4 + S(s).cold);
+const isDark  = h => !h.isDay || h.vis<4000;
 const GEAR = [
   { label:"Veste de pluie",        modes:["taff","sport"], test:isRainy },
   { label:"Garde-boue",            modes:["taff"],         test:isRainy },
-  { label:"Éclairage",             modes:["taff","sport"], test:isDark },
-  { label:"Gilet réfléchissant",   modes:["taff"],         test:isDark },
+  { label:"Éclairage",             modes:["taff","sport"], test:(h)=>isDark(h) },
+  { label:"Gilet réfléchissant",   modes:["taff"],         test:(h)=>isDark(h) },
   { label:"Coupe-vent",            modes:["taff","sport"], test:isWindy },
   { label:"Gants",                 modes:["taff","sport"], test:isCold },
   { label:"Tour de cou",           modes:["taff","sport"], test:isVCold },
-  { label:"Collant long",          modes:["sport"],        test:h => h.feels<=10 },
-  { label:"Sur-chaussures",        modes:["sport"],        test:h => isVCold(h) || (isRainy(h) && h.feels<=12) },
-  { label:"Lunettes de soleil",    modes:["sport"],        test:h => h.isDay && h.uv>=4 && !isRainy(h) },
+  { label:"Collant long",          modes:["sport"],        test:(h,s)=> h.feels <= (10 + S(s).cold) },
+  { label:"Sur-chaussures",        modes:["sport"],        test:(h,s)=> isVCold(h,s) || (isRainy(h,s) && h.feels <= (12 + S(s).cold)) },
+  { label:"Lunettes de soleil",    modes:["sport"],        test:(h,s)=> h.isDay && h.uv>=4 && !isRainy(h,s) },
   { label:"Crème solaire",         modes:["sport"],        test:h => h.uv>=6 },
   { label:"Hydratation +",         modes:["sport"],        test:h => h.feels>=24 },
   { label:"Prudence (air pollué)", modes:["taff","sport"], test:h => typeof h.aqi==="number" && h.aqi>=80 }
@@ -879,7 +1000,7 @@ function renderScore(){
 
 function renderGear(){
   const h = state.focus || state.data.hours[nowIndex()];
-  const items = GEAR.filter(g => g.modes.includes(state.mode) && g.test(h));
+  const items = GEAR.filter(g => g.modes.includes(state.mode) && g.test(h, state.sens));
   const box = $("#gear");
   if(!items.length){
     box.innerHTML = `<div class="gear-none">Tenue classique — rien de particulier à prévoir.</div>`;
@@ -1163,16 +1284,107 @@ function bindUI(){
   ws.addEventListener("change",saveWork); we.addEventListener("change",saveWork);
   wd.addEventListener("input",()=>{ wdv.textContent=(+wd.value||20)+" min"; });
   wd.addEventListener("change",saveWork);
+  // consentement publicitaire (modifiable après coup)
+  $$("[data-ad-opt]").forEach(b=>b.onclick=()=>{ state.adConsent=b.dataset.adOpt; store.set("adConsent",state.adConsent); syncAdSeg(); applyAds(); });
+  syncAdSeg();
+}
+function syncAdSeg(){ $$("[data-ad-opt]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.adOpt===state.adConsent)); }
+function syncSettingsInputs(){
+  $("#sCold").value=state.sens.cold; $("#sRain").value=state.sens.rain; $("#sWind").value=state.sens.wind;
+  $("#workStart").value=state.work.start; $("#workEnd").value=state.work.end;
+  $("#workDur").value=workDuration(); $("#workDurVal").textContent=workDuration()+" min";
+  syncAdSeg();
+}
+
+/* ============================================================
+   Publicité (bandeau AdMob natif + placeholder web) + consentement
+   ============================================================ */
+let admobStarted=false;
+function isNative(){ return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); }
+function applyAds(){
+  const on = !!state.adConsent;
+  document.body.classList.toggle("has-ad", on);
+  const slot=$("#adSlot");
+  if(on && !isNative()){ slot.hidden=false; } else { slot.hidden=true; }
+  if(on && isNative()){ initAdMob(); }
+}
+async function initAdMob(){
+  try{
+    const AdMob = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob;
+    if(!AdMob || admobStarted) return;
+    admobStarted=true;
+    await AdMob.initialize({});
+    try{ await AdMob.requestTrackingAuthorization(); }catch(e){}
+    await AdMob.showBanner({
+      adId: "ca-app-pub-3209259150498249/2102226136", // unité bannière CycloScore (AdMob)
+      adSize: "ADAPTIVE_BANNER",
+      position: "BOTTOM_CENTER",
+      margin: 0,
+      npa: state.adConsent === "nonpersonalized"
+    });
+  }catch(e){ /* pas de pub si indisponible */ }
+}
+
+/* ============================================================
+   Onboarding (première ouverture)
+   ============================================================ */
+const OB = { i:0, usage:"both", consent:"personalized" };
+function obSteps(){ return OB.usage==="sport" ? [0,1,3,4,5] : [0,1,2,3,4,5]; }
+function obShow(){
+  const steps=obSteps();
+  OB.i=Math.max(0, Math.min(OB.i, steps.length-1));
+  const cur=steps[OB.i];
+  $$(".ob-step").forEach(s=>s.classList.toggle("active", +s.dataset.step===cur));
+  $("#obDots").innerHTML=steps.map((_,k)=>`<i class="${k===OB.i?'on':''}"></i>`).join("");
+  $("#obBack").hidden = OB.i===0;
+  $("#obNext").textContent = OB.i===steps.length-1 ? "Commencer" : "Suivant";
+  $(".ob-body").scrollTop=0;
+}
+function obNext(){ const steps=obSteps(); if(OB.i>=steps.length-1){ obFinish(); } else { OB.i++; obShow(); } }
+function obBack(){ if(OB.i>0){ OB.i--; obShow(); } }
+function obFinish(){
+  state.mode = OB.usage==="sport" ? "sport" : "taff";
+  state.work = {start:$("#obStart").value||"09:00", end:$("#obEnd").value||"17:00", duration:+$("#obDur").value||20};
+  state.sens = {cold:+$("#obCold").value||0, rain:+$("#obRain").value||0, wind:+$("#obWind").value||0};
+  state.adConsent = OB.consent;
+  state.onboarded = true;
+  store.set("mode",state.mode); store.set("work",state.work); store.set("sens",state.sens);
+  store.set("adConsent",state.adConsent); store.set("onboarded",true);
+  syncSettingsInputs();
+  $("#onboard").hidden = true;
+  setMode(state.mode);
+  applyAds();
+  render();
+}
+function bindOnboarding(){
+  $("#obNext").onclick=obNext; $("#obBack").onclick=obBack;
+  $$("[data-usage]").forEach(b=>b.onclick=()=>{ OB.usage=b.dataset.usage; $$("[data-usage]").forEach(x=>x.setAttribute("aria-pressed", x===b)); });
+  $$("[data-consent]").forEach(b=>b.onclick=()=>{ OB.consent=b.dataset.consent; $$("[data-consent]").forEach(x=>x.setAttribute("aria-pressed", x===b)); });
+  const dur=$("#obDur"), dv=$("#obDurVal"); dur.addEventListener("input",()=>dv.textContent=(+dur.value)+" min");
+  $("#obGeo").onclick=()=>{
+    if(!navigator.geolocation){ $("#obGeoStatus").textContent="Géolocalisation indisponible."; return; }
+    $("#obGeoStatus").textContent="Localisation…";
+    navigator.geolocation.getCurrentPosition(
+      pos=>{ state.loc={name:"Ma position",sub:"",lat:pos.coords.latitude,lon:pos.coords.longitude}; store.set("loc",state.loc);
+             $("#obGeoStatus").textContent="Position enregistrée."; loadWeather(state.loc); setTimeout(obNext,300); },
+      ()=>{ $("#obGeoStatus").textContent="Localisation refusée — tu pourras chercher une ville dans Lieux."; }
+    );
+  };
+  $("#obLater").onclick=()=>obNext();
 }
 
 function boot(){
   bindUI();
+  bindOnboarding();
   setMode(state.mode);
   setTheme(state.theme);
   // 1) rendu immédiat avec l'échantillon (complet au repos)
   state.data = normalize(sampleData()); state.isSample = true;
   render();
-  // 2) si un lieu est connu, on charge la vraie météo
+  // 2) onboarding au premier lancement, sinon on active la pub selon le consentement
+  if(!state.onboarded){ $("#onboard").hidden=false; obShow(); }
+  else { applyAds(); }
+  // 3) si un lieu est connu, on charge la vraie météo
   if(state.loc){ loadWeather(state.loc); }
 }
 boot();
