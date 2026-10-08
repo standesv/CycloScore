@@ -62,7 +62,7 @@ h1,h2,h3{margin:0;font-family:var(--display);font-weight:600;letter-spacing:.01e
   padding:10px 16px 12px;
 }
 .brand{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.brand .mark{width:26px;height:26px;flex:none}
+.brand .mark{width:30px;height:30px;flex:none;border-radius:8px}
 .brand b{font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:.02em}
 .brand .tag{margin-left:auto;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 .modeswitch{display:flex;background:var(--surface-2);border-radius:999px;padding:3px;gap:3px;border:1px solid var(--line)}
@@ -101,6 +101,8 @@ main{flex:1;padding:16px;display:flex;flex-direction:column;gap:16px}
 .commute .cl-score{color:var(--accent);font-weight:700}
 .timein{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:15px;color:var(--fg);font-family:inherit}
 .timein:focus{outline:2px solid var(--accent);outline-offset:1px}
+.durwrap{display:flex;align-items:center;gap:10px}
+.durwrap #workDurVal{min-width:50px;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
 .alert{
   margin-top:13px;display:none;align-items:center;gap:8px;font-size:13.5px;font-weight:600;
   padding:8px 12px;border-radius:10px;background:var(--bad-tint);color:var(--bad);
@@ -224,11 +226,26 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <div class="app">
   <header class="topbar">
     <div class="brand">
-      <svg class="mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-        <circle cx="8.5" cy="23" r="5.2" stroke="var(--accent)" stroke-width="2.2"/>
-        <circle cx="23.5" cy="23" r="5.2" stroke="var(--accent)" stroke-width="2.2"/>
-        <path d="M8.5 23 14 13h7l2.5 10M14 13l-2-4h-3" stroke="var(--fg)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
-        <circle cx="16" cy="23" r="1.6" fill="var(--accent)"/>
+      <svg class="mark" viewBox="0 0 108 108" aria-hidden="true">
+        <defs><linearGradient id="markSky" x1="8" y1="6" x2="100" y2="104" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#27b7cb"/><stop offset="1" stop-color="#0a6580"/></linearGradient></defs>
+        <rect width="108" height="108" rx="26" fill="url(#markSky)"/>
+        <g transform="matrix(0.94 0 0 0.94 11 3)">
+          <g stroke="#FFCB52" stroke-width="3.6" stroke-linecap="round">
+            <line x1="39" y1="17" x2="39" y2="24"/><line x1="23" y1="23" x2="28" y2="28"/>
+            <line x1="17" y1="39" x2="24" y2="39"/><line x1="23" y1="55" x2="28" y2="50"/>
+            <line x1="55" y1="23" x2="50" y2="28"/>
+          </g>
+          <circle cx="39" cy="39" r="11.5" fill="#FFCB52"/>
+          <path d="M45 58 a10 10 0 0 1 1.5 -19.6 a13 13 0 0 1 24.5 3.2 a9 9 0 0 1 -2.4 16.4 z" fill="#ffffff"/>
+          <circle cx="57" cy="72" r="17.5" fill="none" stroke="#ffffff" stroke-width="5"/>
+          <circle cx="57" cy="72" r="3" fill="#ffffff"/>
+          <g stroke="#ffffff" stroke-width="2" stroke-linecap="round">
+            <line x1="57" y1="72" x2="57" y2="56.5"/><line x1="57" y1="72" x2="70.5" y2="64.5"/>
+            <line x1="57" y1="72" x2="70.5" y2="79.5"/><line x1="57" y1="72" x2="57" y2="87.5"/>
+            <line x1="57" y1="72" x2="43.5" y2="79.5"/><line x1="57" y1="72" x2="43.5" y2="64.5"/>
+          </g>
+        </g>
       </svg>
       <b>CycloScore</b>
       <span class="tag" id="modeTag">vélo taff</span>
@@ -323,6 +340,10 @@ input[type=range]{width:100%;accent-color:var(--accent)}
           <div class="s-l"><div class="t">Fin de journée</div><div class="d">heure de départ du travail</div></div>
           <input type="time" id="workEnd" class="timein" value="17:00">
         </div>
+        <div class="set-row">
+          <div class="s-l"><div class="t">Temps de trajet</div><div class="d">durée d'un aller simple</div></div>
+          <div class="slider durwrap"><input type="range" id="workDur" min="5" max="60" step="5" value="20"><span id="workDurVal">20 min</span></div>
+        </div>
       </div>
       <div class="sec-h" style="margin-top:4px"><h2>Réglages</h2></div>
       <div class="card set">
@@ -387,7 +408,7 @@ const state = {
   range: 24,
   theme: store.get("theme","auto"),
   sens: store.get("sens", {cold:0, rain:0, wind:0}),
-  work: store.get("work", {start:"09:00", end:"17:00"}),
+  work: store.get("work", {start:"09:00", end:"17:00", duration:20}),
   data: null,                           // forecast normalisé
   isSample: true,
   focus: null,                          // heure de référence (trajet en mode taff)
@@ -734,23 +755,42 @@ function nowIndex(){
 function hourFloat(d){ return d.getHours() + d.getMinutes()/60; }
 function parseHM(s){ const m=/^(\d{1,2}):(\d{2})$/.exec(s||""); return m ? (+m[1] + (+m[2])/60) : 9; }
 
-// meilleure heure (score le plus haut) dans une fenêtre [winStart,winEnd] d'un jour donné
-function bestInWindow(dayDate, winStart, winEnd, mode, sens){
+function workDuration(){ return (state.work && state.work.duration) || 20; }
+
+// score d'un TRAJET : moyenne pondérée des heures couvertes entre le départ et l'arrivée
+// (un trajet qui finit après le coucher du soleil est pénalisé par les heures de nuit).
+function rideScore(depDate, durMin, mode, sens){
+  const t0=depDate.getTime(), t1=t0 + durMin*60000;
+  let wsum=0, ssum=0;
+  state.data.hours.forEach(h=>{
+    const hs=h.date.getTime(), he=hs+3600000;
+    const ov=Math.max(0, Math.min(t1,he)-Math.max(t0,hs));
+    if(ov>0){ const w=ov/60000; wsum+=w; ssum+=w*scoreHour(h,mode,sens).score; }
+  });
+  return wsum>0 ? Math.round(ssum/wsum) : null;
+}
+
+// meilleur départ dans une fenêtre [winStart,winEnd] d'un jour donné.
+// durMin défini (mode taff) → on note le trajet complet, sinon l'heure seule.
+function bestInWindow(dayDate, winStart, winEnd, mode, sens, durMin){
   const cand = state.data.hours.filter(h =>
     h.date.toDateString()===dayDate.toDateString() &&
     hourFloat(h.date) >= winStart-0.01 && hourFloat(h.date) <= winEnd+0.01);
   if(!cand.length) return null;
   let best=null;
-  cand.forEach(h=>{ const s=scoreHour(h,mode,sens).score; if(!best || s>best.score) best={h, score:s}; });
+  cand.forEach(h=>{
+    const s = durMin ? rideScore(h.date, durMin, mode, sens) : scoreHour(h,mode,sens).score;
+    if(s!=null && (!best || s>best.score)) best={h, score:s};
+  });
   return best;
 }
 
 // score représentatif d'un jour — identique au grand score du haut pour aujourd'hui
 function dayScore(dayDate, mode, sens){
   if(mode==="taff"){
-    const Hs=parseHM(state.work.start), He=parseHM(state.work.end);
-    const m=bestInWindow(dayDate, Hs-2, Hs, mode, sens);   // aller
-    const e=bestInWindow(dayDate, He,   He+2, mode, sens); // retour
+    const Hs=parseHM(state.work.start), He=parseHM(state.work.end), dur=workDuration();
+    const m=bestInWindow(dayDate, Hs-2, Hs, mode, sens, dur);   // aller
+    const e=bestInWindow(dayDate, He,   He+2, mode, sens, dur); // retour
     const parts=[m,e].filter(Boolean).map(x=>x.score);
     if(!parts.length) return null;
     return Math.round(parts.reduce((a,b)=>a+b,0)/parts.length);
@@ -799,7 +839,7 @@ function renderScore(){
   let focus = nowH, commute = null, best = null;
   if(state.mode==="taff"){
     commute = nextCommute();
-    best = bestInWindow(commute.dayDate, commute.winStart, commute.winEnd, state.mode, state.sens);
+    best = bestInWindow(commute.dayDate, commute.winStart, commute.winEnd, state.mode, state.sens, workDuration());
     if(best) focus = best.h;
   }
   state.focus = focus;
@@ -878,10 +918,14 @@ function renderHourly(){
   const path = line(data);
   const area = `${path} L${x(n-1).toFixed(1)} ${yBot} L${x(0).toFixed(1)} ${yBot} Z`;
 
-  // meilleures fenêtres (≥70 contiguës)
+  // meilleures fenêtres (≥70 contiguës, en journée).
+  // En mode taff, on reste sur AUJOURD'HUI (cohérent avec le trajet) ; le lendemain
+  // n'est proposé qu'en sortie sportive.
+  const todayStr = state.data.hours[nowIndex()].date.toDateString();
   let best=null, cur=null;
   data.forEach((p,k)=>{
-    if(p.s>=70 && p.h.isDay){ if(!cur) cur={a:k,b:k}; else cur.b=k; }
+    const sameDayOk = state.mode!=="taff" || p.h.date.toDateString()===todayStr;
+    if(p.s>=70 && p.h.isDay && sameDayOk){ if(!cur) cur={a:k,b:k}; else cur.b=k; }
     else { if(cur){ if(!best || (cur.b-cur.a)>(best.b-best.a)) best=cur; cur=null; } }
   });
   if(cur && (!best || (cur.b-cur.a)>(best.b-best.a))) best=cur;
@@ -1099,19 +1143,26 @@ function bindUI(){
   $$("[data-theme-opt]").forEach(b=>b.onclick=()=>setTheme(b.dataset.themeOpt));
   $("#btnReset").onclick=()=>{
     try{ Object.keys(localStorage).filter(k=>k.startsWith("cyclo:")).forEach(k=>localStorage.removeItem(k)); }catch(e){}
-    state.saved=[]; state.sens={cold:0,rain:0,wind:0}; state.work={start:"09:00",end:"17:00"};
+    state.saved=[]; state.sens={cold:0,rain:0,wind:0}; state.work={start:"09:00",end:"17:00",duration:20};
     $("#sCold").value=0; $("#sRain").value=0; $("#sWind").value=0;
-    $("#workStart").value="09:00"; $("#workEnd").value="17:00";
+    $("#workStart").value="09:00"; $("#workEnd").value="17:00"; $("#workDur").value=20; $("#workDurVal").textContent="20 min";
     setTheme("auto"); renderSaved(); render(); toast("Réinitialisé");
   };
   const sens=(id,key)=>{ const el=$(id); el.value=state.sens[key];
     el.addEventListener("input",()=>{ state.sens[key]=+el.value; store.set("sens",state.sens); render(); }); };
   sens("#sCold","cold"); sens("#sRain","rain"); sens("#sWind","wind");
-  // horaires de travail
-  const ws=$("#workStart"), we=$("#workEnd");
-  ws.value=state.work.start; we.value=state.work.end;
-  const saveWork=()=>{ state.work={start:ws.value||"09:00", end:we.value||"17:00"}; store.set("work",state.work); render(); };
+  // horaires de travail + temps de trajet
+  const ws=$("#workStart"), we=$("#workEnd"), wd=$("#workDur"), wdv=$("#workDurVal");
+  ws.value=state.work.start||"09:00"; we.value=state.work.end||"17:00"; wd.value=workDuration();
+  wdv.textContent = workDuration()+" min";
+  const saveWork=()=>{
+    state.work={start:ws.value||"09:00", end:we.value||"17:00", duration:+wd.value||20};
+    wdv.textContent = (+wd.value||20)+" min";
+    store.set("work",state.work); render();
+  };
   ws.addEventListener("change",saveWork); we.addEventListener("change",saveWork);
+  wd.addEventListener("input",()=>{ wdv.textContent=(+wd.value||20)+" min"; });
+  wd.addEventListener("change",saveWork);
 }
 
 function boot(){
