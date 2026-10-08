@@ -1,5 +1,5 @@
 {
-  "appId": "bzh.dargio.cycloscore",
+  "appId": "com.cycloscore.myapp",
   "appName": "CycloScore",
   "webDir": "www",
   "android": { "allowMixedContent": false }
