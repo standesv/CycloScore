@@ -95,6 +95,12 @@ main{flex:1;padding:16px;display:flex;flex-direction:column;gap:16px}
 .gauge .outof{font-size:13px;color:var(--muted);margin-top:2px;letter-spacing:.04em}
 .verdict{margin-top:14px;font-family:var(--display);font-size:26px;font-weight:600}
 .reason{margin-top:3px;color:var(--muted);font-size:14.5px;max-width:34ch}
+.hero-eyebrow{align-self:center;font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.commute{margin-top:13px;display:flex;align-items:center;gap:9px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:14px}
+.commute svg{width:18px;height:18px;color:var(--accent);flex:none}
+.commute .cl-score{color:var(--accent);font-weight:700}
+.timein{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:15px;color:var(--fg);font-family:inherit}
+.timein:focus{outline:2px solid var(--accent);outline-offset:1px}
 .alert{
   margin-top:13px;display:none;align-items:center;gap:8px;font-size:13.5px;font-weight:600;
   padding:8px 12px;border-radius:10px;background:var(--bad-tint);color:var(--bad);
@@ -248,6 +254,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         <span>Données d'exemple — localise-toi ou cherche une ville pour la météo réelle.</span>
       </div>
       <div class="card hero">
+        <div class="hero-eyebrow" id="heroEyebrow">Aujourd'hui</div>
         <div class="gauge">
           <svg width="208" height="208" viewBox="0 0 208 208" aria-hidden="true">
             <circle class="track" cx="104" cy="104" r="90"/>
@@ -260,6 +267,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         </div>
         <div class="verdict" id="verdict">—</div>
         <div class="reason" id="reason">On récupère les conditions…</div>
+        <div class="commute" id="commuteLine" hidden></div>
         <div class="alert" id="alertBox"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 2 20h20L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span id="alertText"></span></div>
       </div>
 
@@ -276,7 +284,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         <div class="best"><span class="dot"></span><span id="bestText">—</span></div>
       </div>
 
-      <div class="sec-h"><h2>7 jours</h2><span class="hint">score moyen en journée</span></div>
+      <div class="sec-h"><h2>7 jours</h2><span class="hint" id="dailyHint">score moyen en journée</span></div>
       <div class="card daily" id="daily"></div>
     </section>
 
@@ -305,7 +313,18 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 
     <!-- SETTINGS -->
     <section class="view" id="view-set" hidden>
-      <div class="sec-h"><h2>Réglages</h2></div>
+      <div class="sec-h"><h2>Journée de travail</h2><span class="hint">mode vélo taff</span></div>
+      <div class="card set">
+        <div class="set-row">
+          <div class="s-l"><div class="t">Début de journée</div><div class="d">heure d'arrivée au travail</div></div>
+          <input type="time" id="workStart" class="timein" value="09:00">
+        </div>
+        <div class="set-row">
+          <div class="s-l"><div class="t">Fin de journée</div><div class="d">heure de départ du travail</div></div>
+          <input type="time" id="workEnd" class="timein" value="17:00">
+        </div>
+      </div>
+      <div class="sec-h" style="margin-top:4px"><h2>Réglages</h2></div>
       <div class="card set">
         <div class="set-row">
           <div class="s-l"><div class="t">Sensibilité au froid</div><div class="d">« frileux » relève le seuil de confort</div></div>
@@ -368,8 +387,10 @@ const state = {
   range: 24,
   theme: store.get("theme","auto"),
   sens: store.get("sens", {cold:0, rain:0, wind:0}),
+  work: store.get("work", {start:"09:00", end:"17:00"}),
   data: null,                           // forecast normalisé
   isSample: true,
+  focus: null,                          // heure de référence (trajet en mode taff)
   tab: "score"
 };
 
@@ -525,17 +546,24 @@ function aqiLabel(a){
 }
 
 /* ---- matériel conseillé : signaux qui s'activent selon les conditions + le mode ---- */
+/* prédicats partagés avec la logique du score, pour rester cohérents */
+const isRainy  = h => h.rain>=0.2 || h.prob>=55 || (h.code>=51 && h.code<=82);
+const isWindy  = h => Math.max(h.wind, h.gust*0.8) >= 22;   // ≈ "vent soutenu" dans le score
+const isStrongWind = h => h.gust>=55 || h.wind>=40;
+const isCold   = h => h.feels<=8;
+const isVCold  = h => h.feels<=4;
+const isDark   = h => !h.isDay || h.vis<4000;
 const GEAR = [
-  { label:"Veste de pluie",        modes:["taff","sport"], test:h => h.rain>=0.3 || h.prob>=60 },
-  { label:"Garde-boue",            modes:["taff"],         test:h => h.rain>=0.2 || h.prob>=60 },
-  { label:"Éclairage",             modes:["taff","sport"], test:h => !h.isDay || h.vis<4000 },
-  { label:"Gilet réfléchissant",   modes:["taff"],         test:h => !h.isDay || h.vis<4000 },
-  { label:"Coupe-vent",            modes:["taff","sport"], test:h => h.wind>=30 || h.gust>=45 },
-  { label:"Gants",                 modes:["taff","sport"], test:h => h.feels<=8 },
-  { label:"Tour de cou",           modes:["taff","sport"], test:h => h.feels<=5 },
+  { label:"Veste de pluie",        modes:["taff","sport"], test:isRainy },
+  { label:"Garde-boue",            modes:["taff"],         test:isRainy },
+  { label:"Éclairage",             modes:["taff","sport"], test:isDark },
+  { label:"Gilet réfléchissant",   modes:["taff"],         test:isDark },
+  { label:"Coupe-vent",            modes:["taff","sport"], test:isWindy },
+  { label:"Gants",                 modes:["taff","sport"], test:isCold },
+  { label:"Tour de cou",           modes:["taff","sport"], test:isVCold },
   { label:"Collant long",          modes:["sport"],        test:h => h.feels<=10 },
-  { label:"Sur-chaussures",        modes:["sport"],        test:h => h.feels<=7 || (h.rain>=0.3 && h.feels<=12) },
-  { label:"Lunettes de soleil",    modes:["sport"],        test:h => h.isDay && h.uv>=4 && h.rain<0.1 },
+  { label:"Sur-chaussures",        modes:["sport"],        test:h => isVCold(h) || (isRainy(h) && h.feels<=12) },
+  { label:"Lunettes de soleil",    modes:["sport"],        test:h => h.isDay && h.uv>=4 && !isRainy(h) },
   { label:"Crème solaire",         modes:["sport"],        test:h => h.uv>=6 },
   { label:"Hydratation +",         modes:["sport"],        test:h => h.feels>=24 },
   { label:"Prudence (air pollué)", modes:["taff","sport"], test:h => typeof h.aqi==="number" && h.aqi>=80 }
@@ -702,6 +730,51 @@ function nowIndex(){
   return idx<0 ? 0 : idx;
 }
 
+/* ---- trajets domicile-travail + score représentatif du jour ---- */
+function hourFloat(d){ return d.getHours() + d.getMinutes()/60; }
+function parseHM(s){ const m=/^(\d{1,2}):(\d{2})$/.exec(s||""); return m ? (+m[1] + (+m[2])/60) : 9; }
+
+// meilleure heure (score le plus haut) dans une fenêtre [winStart,winEnd] d'un jour donné
+function bestInWindow(dayDate, winStart, winEnd, mode, sens){
+  const cand = state.data.hours.filter(h =>
+    h.date.toDateString()===dayDate.toDateString() &&
+    hourFloat(h.date) >= winStart-0.01 && hourFloat(h.date) <= winEnd+0.01);
+  if(!cand.length) return null;
+  let best=null;
+  cand.forEach(h=>{ const s=scoreHour(h,mode,sens).score; if(!best || s>best.score) best={h, score:s}; });
+  return best;
+}
+
+// score représentatif d'un jour — identique au grand score du haut pour aujourd'hui
+function dayScore(dayDate, mode, sens){
+  if(mode==="taff"){
+    const Hs=parseHM(state.work.start), He=parseHM(state.work.end);
+    const m=bestInWindow(dayDate, Hs-2, Hs, mode, sens);   // aller
+    const e=bestInWindow(dayDate, He,   He+2, mode, sens); // retour
+    const parts=[m,e].filter(Boolean).map(x=>x.score);
+    if(!parts.length) return null;
+    return Math.round(parts.reduce((a,b)=>a+b,0)/parts.length);
+  }
+  const hrs=state.data.hours.filter(h=> h.date.toDateString()===dayDate.toDateString() && h.isDay);
+  if(!hrs.length) return null;
+  const arr=hrs.map(h=>scoreHour(h,mode,sens).score).sort((a,b)=>a-b);
+  const mean=arr.reduce((s,x)=>s+x,0)/arr.length;
+  const k=Math.max(1,Math.ceil(arr.length/3));
+  const worst=arr.slice(0,k).reduce((s,x)=>s+x,0)/k;
+  return Math.round(0.45*mean + 0.55*worst);
+}
+
+// prochain trajet (mode taff) selon l'heure courante et les horaires de travail
+function nextCommute(){
+  const Hs=parseHM(state.work.start), He=parseHM(state.work.end);
+  const now=state.data.hours[nowIndex()].date;
+  const nowH=hourFloat(now);
+  if(nowH < Hs)  return {dir:"aller",  dayDate:now, winStart:Hs-2, winEnd:Hs};
+  if(nowH < He)  return {dir:"retour", dayDate:now, winStart:He,   winEnd:He+2};
+  const tmr=new Date(now.getTime()+86400000);
+  return {dir:"aller", dayDate:tmr, winStart:Hs-2, winEnd:Hs};
+}
+
 function render(){
   if(!state.data) return;
   $("#sampleBadge").hidden = !state.isSample;
@@ -715,31 +788,57 @@ function render(){
 }
 
 function renderScore(){
-  const i = nowIndex();
-  const h = state.data.hours[i];
-  const res = scoreHour(h, state.mode, state.sens);
-  const b = band(res.score);
-  // jauge
-  const C = 2*Math.PI*90;
-  const el = $("#gaugeVal");
+  const nowH = state.data.hours[nowIndex()];
+  const today = nowH.date;
+
+  // grand score = score représentatif du jour (identique à la ligne "aujourd'hui" du 7 jours)
+  let big = dayScore(today, state.mode, state.sens);
+  if(big==null) big = scoreHour(nowH, state.mode, state.sens).score;
+
+  // heure de référence (raison, matériel, alerte) : le trajet à venir en mode taff, sinon maintenant
+  let focus = nowH, commute = null, best = null;
+  if(state.mode==="taff"){
+    commute = nextCommute();
+    best = bestInWindow(commute.dayDate, commute.winStart, commute.winEnd, state.mode, state.sens);
+    if(best) focus = best.h;
+  }
+  state.focus = focus;
+
+  const b = band(big);
+  const C = 2*Math.PI*90, el = $("#gaugeVal");
   el.style.stroke = b.color;
   el.setAttribute("stroke-dasharray", C);
-  el.setAttribute("stroke-dashoffset", C*(1 - res.score/100));
-  $("#scoreNum").textContent = res.score;
+  el.setAttribute("stroke-dashoffset", C*(1 - big/100));
+  $("#scoreNum").textContent = big;
   $("#scoreNum").style.color = b.color;
   $("#verdict").textContent = b.word;
+  $("#heroEyebrow").textContent = state.mode==="taff" ? "Trajets d'aujourd'hui" : "Aujourd'hui";
+
+  const res = scoreHour(focus, state.mode, state.sens);
   $("#reason").textContent = res.caps.length ? cap1(res.caps[0])
     : (res.score>=82 ? "Conditions globalement bonnes" : cap1(dominant(res)));
+
   const a = $("#alertBox");
   if(res.caps.length){ a.classList.add("show"); $("#alertText").textContent = res.caps.join(" · "); }
   else a.classList.remove("show");
-  const t = h.date;
-  $("#nowLabel").textContent = "maintenant · " + t.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+
+  // ligne trajet : meilleure heure pour partir (aller / retour)
+  const cl = $("#commuteLine");
+  if(state.mode==="taff" && commute && best){
+    const t = best.h.date.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+    const when = commute.dayDate.toDateString()===today.toDateString() ? "" : "demain ";
+    const label = commute.dir==="aller" ? "Aller au travail" : "Retour du travail";
+    cl.innerHTML =
+      `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`+
+      `<span><b>${label}</b> · partez ${when}vers <b>${t}</b> <span class="cl-score">${best.score}</span></span>`;
+    cl.hidden = false;
+  } else { cl.hidden = true; }
+
+  $("#nowLabel").textContent = "maintenant · " + nowH.date.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
 }
 
 function renderGear(){
-  const i = nowIndex();
-  const h = state.data.hours[i];
+  const h = state.focus || state.data.hours[nowIndex()];
   const items = GEAR.filter(g => g.modes.includes(state.mode) && g.test(h));
   const box = $("#gear");
   if(!items.length){
@@ -828,25 +927,10 @@ function renderHourly(){
 
 function renderDaily(){
   const box=$("#daily"); box.innerHTML="";
-  const byDay={};
-  state.data.hours.forEach(h=>{
-    const key=h.date.toDateString();
-    (byDay[key]=byDay[key]||[]).push(h);
-  });
+  const dh=$("#dailyHint"); if(dh) dh.textContent = state.mode==="taff" ? "score des trajets aller/retour" : "score moyen en journée";
   state.data.days.slice(0,7).forEach((d)=>{
-    const key=d.date.toDateString();
-    // uniquement les heures de JOUR (entre lever et coucher du soleil)
-    const hrs=(byDay[key]||[]).filter(h=>h.isDay);
-    let avg=null;
-    if(hrs.length){
-      // on mélange la moyenne de journée avec le pire tiers : des averses
-      // en milieu de journée doivent tirer le score du jour vers le bas.
-      const arr=hrs.map(h=>scoreHour(h,state.mode,state.sens).score).sort((a,b)=>a-b);
-      const mean=arr.reduce((s,x)=>s+x,0)/arr.length;
-      const k=Math.max(1,Math.ceil(arr.length/3));
-      const worst=arr.slice(0,k).reduce((s,x)=>s+x,0)/k;
-      avg=Math.round(0.45*mean + 0.55*worst);
-    }
+    // même calcul que le grand score du haut (trajets en taff, journée en sportif)
+    const avg = dayScore(d.date, state.mode, state.sens);
     const b=band(avg==null?0:avg);
     const w=wmo(d.code);
     const name=d.date.toLocaleDateString("fr-FR",{weekday:"short"});
@@ -1015,13 +1099,19 @@ function bindUI(){
   $$("[data-theme-opt]").forEach(b=>b.onclick=()=>setTheme(b.dataset.themeOpt));
   $("#btnReset").onclick=()=>{
     try{ Object.keys(localStorage).filter(k=>k.startsWith("cyclo:")).forEach(k=>localStorage.removeItem(k)); }catch(e){}
-    state.saved=[]; state.sens={cold:0,rain:0,wind:0};
+    state.saved=[]; state.sens={cold:0,rain:0,wind:0}; state.work={start:"09:00",end:"17:00"};
     $("#sCold").value=0; $("#sRain").value=0; $("#sWind").value=0;
+    $("#workStart").value="09:00"; $("#workEnd").value="17:00";
     setTheme("auto"); renderSaved(); render(); toast("Réinitialisé");
   };
   const sens=(id,key)=>{ const el=$(id); el.value=state.sens[key];
     el.addEventListener("input",()=>{ state.sens[key]=+el.value; store.set("sens",state.sens); render(); }); };
   sens("#sCold","cold"); sens("#sRain","rain"); sens("#sWind","wind");
+  // horaires de travail
+  const ws=$("#workStart"), we=$("#workEnd");
+  ws.value=state.work.start; we.value=state.work.end;
+  const saveWork=()=>{ state.work={start:ws.value||"09:00", end:we.value||"17:00"}; store.set("work",state.work); render(); };
+  ws.addEventListener("change",saveWork); we.addEventListener("change",saveWork);
 }
 
 function boot(){
