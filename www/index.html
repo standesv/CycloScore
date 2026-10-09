@@ -40,7 +40,7 @@
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html,body{height:100%}
+html,body{height:100%;overflow-anchor:none}
 body{
   margin:0;background:var(--bg);color:var(--fg);
   font-family:var(--body);font-size:15px;line-height:1.5;
@@ -55,10 +55,10 @@ h1,h2,h3{margin:0;font-family:var(--display);font-weight:600;letter-spacing:.01e
 }
 /* ---- top bar ---- */
 .topbar{
-  position:sticky;top:env(safe-area-inset-top,0px);z-index:20;
+  position:sticky;top:0;z-index:20;
   background:var(--bg);
   border-bottom:1px solid var(--line);
-  padding:10px 16px 12px;
+  padding:calc(10px + env(safe-area-inset-top,0px)) 16px 12px;
 }
 .brand{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .brand .mark{width:30px;height:30px;flex:none;border-radius:8px}
@@ -1351,11 +1351,15 @@ function renderSaved(){
 /* ============================================================
    Interactions
    ============================================================ */
+function resetScroll(){
+  const z=()=>{ try{ window.scrollTo(0,0); if(document.scrollingElement) document.scrollingElement.scrollTop=0; document.body.scrollTop=0; }catch(e){} };
+  z(); requestAnimationFrame(z); setTimeout(z,60);
+}
 function go(tab){
   state.tab=tab;
   $$(".view").forEach(v=>v.hidden = v.id!=="view-"+tab);
   $$(".nav button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.tab===tab));
-  try{ window.scrollTo(0,0); if(document.scrollingElement) document.scrollingElement.scrollTop=0; }catch(e){}
+  resetScroll();
 }
 function setMode(m){
   state.mode=m; store.set("mode",m);
@@ -1537,6 +1541,7 @@ function obFinish(){
   setMode(state.mode);
   applyAds();
   render();
+  resetScroll();
 }
 function bindOnboarding(){
   $("#obNext").onclick=obNext; $("#obBack").onclick=obBack;
@@ -1569,6 +1574,7 @@ function boot(){
   else { applyAds(); }
   // 3) si un lieu est connu, on charge la vraie météo
   if(state.loc){ loadWeather(state.loc); }
+  resetScroll();
 }
 boot();
 </script>
