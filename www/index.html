@@ -18,7 +18,7 @@
   --good-tint:rgba(21,162,74,.14); --warn-tint:rgba(217,131,0,.16); --bad-tint:rgba(220,39,67,.14);
   --shadow:0 1px 2px rgba(16,40,50,.06),0 8px 24px rgba(16,40,50,.07);
   --radius:16px; --radius-sm:11px;
-  --ad-h:56px;
+  --ad-h:60px;
   --display:"Barlow Condensed",system-ui,sans-serif;
   --body:"Barlow",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
   color-scheme:light;
@@ -224,8 +224,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .adslot{position:fixed;left:0;right:0;bottom:0;z-index:40;height:calc(var(--ad-h) + env(safe-area-inset-bottom,0px));
   padding-bottom:env(safe-area-inset-bottom,0px);display:flex;align-items:center;justify-content:center;
   background:var(--surface-2);border-top:1px solid var(--line);color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
-body.has-ad .nav{bottom:calc(var(--ad-h) + env(safe-area-inset-bottom,0px));padding-bottom:0}
-body.has-ad .app{padding-bottom:calc(72px + var(--ad-h))}
+body.has-ad .nav{bottom:0;padding-bottom:calc(var(--ad-h) + env(safe-area-inset-bottom,0px));background:var(--surface)}
+body.has-ad .app{padding-bottom:calc(72px + var(--ad-h) + env(safe-area-inset-bottom,0px))}
 /* onboarding */
 #onboard{position:fixed;inset:0;z-index:120;background:var(--bg);display:flex;flex-direction:column;
   padding:calc(20px + env(safe-area-inset-top,0px)) 20px calc(20px + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto}
