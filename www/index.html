@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
 <style>
-/* CycloScore — prototype web. Layout : app mobile centrée (colonne ≤ 480px),
+/* CycloScore — app web. Layout : app mobile centrée (colonne ≤ 480px),
    barre de mode + lieu en haut, jauge de score en héros, courbe horaire,
    bande 7 jours, onglets Score / Détail / Lieux / Réglages, nav basse. */
 :root{
@@ -56,8 +56,7 @@ h1,h2,h3{margin:0;font-family:var(--display);font-weight:600;letter-spacing:.01e
 /* ---- top bar ---- */
 .topbar{
   position:sticky;top:env(safe-area-inset-top,0px);z-index:20;
-  background:color-mix(in srgb,var(--bg) 86%,transparent);
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  background:var(--bg);
   border-bottom:1px solid var(--line);
   padding:10px 16px 12px;
 }
@@ -414,7 +413,7 @@ body.has-ad .app{padding-bottom:calc(72px + 56px)}
           <button class="btn ghost" id="btnReset" data-i18n="clear">Effacer</button>
         </div>
       </div>
-      <p class="foot" data-i18n="foot_settings">CycloScore — prototype. Données météo : Open-Meteo (gratuit, sans clé).<br>Le score est calculé localement sur ton appareil.</p>
+      <p class="foot" data-i18n="foot_settings">Données météo : Open-Meteo (gratuit, sans clé).<br>Le score est calculé localement sur ton appareil.</p>
     </section>
   </main>
 
@@ -541,7 +540,7 @@ const STR = {
     light:"Clair", auto:"Auto", dark:"Sombre",
     ads:"Publicité", ads_d:"personnalisée ou non", perso_short:"Perso.", nonperso_short:"Non perso.",
     reset:"Réinitialiser", reset_d:"efface réglages et lieux", clear:"Effacer",
-    foot_settings:"CycloScore — prototype. Données météo : Open-Meteo (gratuit, sans clé).<br>Le score est calculé localement sur ton appareil.",
+    foot_settings:"Données météo : Open-Meteo (gratuit, sans clé).<br>Le score est calculé localement sur ton appareil.",
     nav_score:"Score", nav_detail:"Détail", nav_places:"Lieux", nav_settings:"Réglages", ad_label:"Publicité",
     ob0_h1:"Bienvenue sur CycloScore",
     ob0_sub1:"Un score simple pour savoir quand enfourcher le vélo — trajet boulot ou sortie sportive.",
@@ -622,7 +621,7 @@ const STR = {
     light:"Light", auto:"Auto", dark:"Dark",
     ads:"Ads", ads_d:"personalized or not", perso_short:"Pers.", nonperso_short:"Non-pers.",
     reset:"Reset", reset_d:"clears settings and places", clear:"Clear",
-    foot_settings:"CycloScore. Weather data: Open-Meteo (free, no key).<br>The score is computed locally on your device.",
+    foot_settings:"Weather data: Open-Meteo (free, no key).<br>The score is computed locally on your device.",
     nav_score:"Score", nav_detail:"Details", nav_places:"Places", nav_settings:"Settings", ad_label:"Advertisement",
     ob0_h1:"Welcome to CycloScore",
     ob0_sub1:"A simple score to know when to hop on the bike — commute or sport ride.",
@@ -1356,7 +1355,7 @@ function go(tab){
   state.tab=tab;
   $$(".view").forEach(v=>v.hidden = v.id!=="view-"+tab);
   $$(".nav button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.tab===tab));
-  window.scrollTo({top:0});
+  try{ window.scrollTo(0,0); if(document.scrollingElement) document.scrollingElement.scrollTop=0; }catch(e){}
 }
 function setMode(m){
   state.mode=m; store.set("mode",m);
