@@ -283,13 +283,13 @@ body.has-ad .app{padding-bottom:calc(72px + 56px)}
       <span class="tag" id="modeTag">vélo taff</span>
     </div>
     <div class="modeswitch" role="group" aria-label="Mode">
-      <button id="mTaff" aria-pressed="true">Vélo taff</button>
-      <button id="mSport" aria-pressed="false">Sortie sportive</button>
+      <button id="mTaff" aria-pressed="true" data-i18n="mode_taff_full">Vélo taff</button>
+      <button id="mSport" aria-pressed="false" data-i18n="mode_sport_full">Sortie sportive</button>
     </div>
     <div class="loc">
       <svg class="pin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/></svg>
-      <span class="name" id="locName">Chargement…</span>
-      <button class="refresh" id="btnRefresh" aria-label="Rafraîchir">
+      <span class="name" id="locName" data-i18n="loading">Chargement…</span>
+      <button class="refresh" id="btnRefresh" aria-label="Rafraîchir" data-i18n-aria="refresh">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M20 11a8 8 0 1 0-.9 4.5M20 5v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
@@ -300,7 +300,7 @@ body.has-ad .app{padding-bottom:calc(72px + 56px)}
     <section class="view" id="view-score">
       <div class="badge-sample" id="sampleBadge">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <span>Données d'exemple — localise-toi ou cherche une ville pour la météo réelle.</span>
+        <span data-i18n="sample">Données d'exemple — localise-toi ou cherche une ville pour la météo réelle.</span>
       </div>
       <div class="card hero">
         <div class="hero-eyebrow" id="heroEyebrow">Aujourd'hui</div>
@@ -315,120 +315,120 @@ body.has-ad .app{padding-bottom:calc(72px + 56px)}
           </div>
         </div>
         <div class="verdict" id="verdict">—</div>
-        <div class="reason" id="reason">On récupère les conditions…</div>
+        <div class="reason" id="reason" data-i18n="reason_default">On récupère les conditions…</div>
         <div class="commute" id="commuteLine" hidden></div>
         <div class="alert" id="alertBox"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 2 20h20L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span id="alertText"></span></div>
       </div>
 
-      <div class="sec-h"><h2>Matériel conseillé</h2><span class="hint" id="gearHint"></span></div>
+      <div class="sec-h"><h2 data-i18n="gear_title">Matériel conseillé</h2><span class="hint" id="gearHint"></span></div>
       <div class="card gearcard"><div class="gearwrap" id="gear"></div></div>
 
-      <div class="sec-h"><h2>Prochaines heures</h2><span class="hint" id="nowLabel"></span></div>
+      <div class="sec-h"><h2 data-i18n="next_hours">Prochaines heures</h2><span class="hint" id="nowLabel"></span></div>
       <div class="card hourly">
         <div class="rangeswitch" role="group" aria-label="Horizon">
           <button id="r24" aria-pressed="true">24 h</button>
           <button id="r48" aria-pressed="false">48 h</button>
         </div>
-        <div class="chartwrap"><svg class="chart" id="chart" preserveAspectRatio="none" aria-label="Score heure par heure"></svg></div>
+        <div class="chartwrap"><svg class="chart" id="chart" preserveAspectRatio="none" aria-label="Score heure par heure" data-i18n-aria="chart_aria"></svg></div>
         <div class="best"><span class="dot"></span><span id="bestText">—</span></div>
       </div>
 
-      <div class="sec-h"><h2>7 jours</h2><span class="hint" id="dailyHint">score moyen en journée</span></div>
+      <div class="sec-h"><h2 data-i18n="seven_days">7 jours</h2><span class="hint" id="dailyHint">score moyen en journée</span></div>
       <div class="card daily" id="daily"></div>
     </section>
 
     <!-- DETAIL -->
     <section class="view" id="view-detail" hidden>
-      <div class="sec-h"><h2>Conditions maintenant</h2><span class="hint" id="detailTime"></span></div>
+      <div class="sec-h"><h2 data-i18n="cond_now">Conditions maintenant</h2><span class="hint" id="detailTime"></span></div>
       <div class="card cond" id="cond"></div>
-      <p class="foot">Chaque barre montre la contribution de la variable au score (plus la barre est courte et rouge, plus elle tire le score vers le bas).</p>
+      <p class="foot" data-i18n="foot_detail">Chaque barre montre la contribution de la variable au score (plus la barre est courte et rouge, plus elle tire le score vers le bas).</p>
     </section>
 
     <!-- PLACES -->
     <section class="view" id="view-places" hidden>
-      <div class="sec-h"><h2>Lieux</h2></div>
+      <div class="sec-h"><h2 data-i18n="places">Lieux</h2></div>
       <div class="search">
-        <input id="searchInput" type="text" placeholder="Chercher une ville…" autocomplete="off" inputmode="search">
-        <button class="btn" id="btnSearch">OK</button>
+        <input id="searchInput" type="text" placeholder="Chercher une ville…" data-i18n-ph="search_ph" autocomplete="off" inputmode="search">
+        <button class="btn" id="btnSearch" data-i18n="ok">OK</button>
       </div>
       <button class="btn ghost" id="btnGeo" style="width:100%">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        Me localiser
+        <span data-i18n="locate_me">Me localiser</span>
       </button>
       <div class="results" id="results"></div>
-      <div class="sec-h" style="margin-top:8px"><h2>Enregistrés</h2></div>
+      <div class="sec-h" style="margin-top:8px"><h2 data-i18n="saved_title">Enregistrés</h2></div>
       <div class="card saved"><div class="results" id="savedList"></div></div>
     </section>
 
     <!-- SETTINGS -->
     <section class="view" id="view-set" hidden>
-      <div class="sec-h"><h2>Journée de travail</h2><span class="hint">mode vélo taff</span></div>
+      <div class="sec-h"><h2 data-i18n="workday">Journée de travail</h2><span class="hint" data-i18n="mode_taff_hint">mode vélo taff</span></div>
       <div class="card set">
         <div class="set-row">
-          <div class="s-l"><div class="t">Début de journée</div><div class="d">heure d'arrivée au travail</div></div>
+          <div class="s-l"><div class="t" data-i18n="set_start">Début de journée</div><div class="d" data-i18n="set_start_d">heure d'arrivée au travail</div></div>
           <input type="time" id="workStart" class="timein" value="09:00">
         </div>
         <div class="set-row">
-          <div class="s-l"><div class="t">Fin de journée</div><div class="d">heure de départ du travail</div></div>
+          <div class="s-l"><div class="t" data-i18n="set_end">Fin de journée</div><div class="d" data-i18n="set_end_d">heure de départ du travail</div></div>
           <input type="time" id="workEnd" class="timein" value="17:00">
         </div>
         <div class="set-row">
-          <div class="s-l"><div class="t">Temps de trajet</div><div class="d">durée d'un aller simple</div></div>
+          <div class="s-l"><div class="t" data-i18n="set_dur">Temps de trajet</div><div class="d" data-i18n="set_dur_d">durée d'un aller simple</div></div>
           <div class="slider durwrap"><input type="range" id="workDur" min="5" max="60" step="5" value="20"><span id="workDurVal">20 min</span></div>
         </div>
       </div>
-      <div class="sec-h" style="margin-top:4px"><h2>Réglages</h2></div>
+      <div class="sec-h" style="margin-top:4px"><h2 data-i18n="settings">Réglages</h2></div>
       <div class="card set">
         <div class="set-row">
-          <div class="s-l"><div class="t">Sensibilité au froid</div><div class="d">« frileux » relève le seuil de confort</div></div>
+          <div class="s-l"><div class="t" data-i18n="cold_sens">Sensibilité au froid</div><div class="d" data-i18n="cold_sens_d">« frileux » relève le seuil de confort</div></div>
           <div class="slider"><input type="range" id="sCold" min="-6" max="6" value="0"></div>
         </div>
         <div class="set-row">
-          <div class="s-l"><div class="t">Tolérance à la pluie</div><div class="d">à gauche = plus strict</div></div>
+          <div class="s-l"><div class="t" data-i18n="rain_tol">Tolérance à la pluie</div><div class="d" data-i18n="strict_left">à gauche = plus strict</div></div>
           <div class="slider"><input type="range" id="sRain" min="-5" max="5" value="0"></div>
         </div>
         <div class="set-row">
-          <div class="s-l"><div class="t">Tolérance au vent</div><div class="d">à gauche = plus strict</div></div>
+          <div class="s-l"><div class="t" data-i18n="wind_tol">Tolérance au vent</div><div class="d" data-i18n="strict_left">à gauche = plus strict</div></div>
           <div class="slider"><input type="range" id="sWind" min="-5" max="5" value="0"></div>
         </div>
       </div>
-      <div class="sec-h" style="margin-top:4px"><h2>Affichage</h2></div>
+      <div class="sec-h" style="margin-top:4px"><h2 data-i18n="display">Affichage</h2></div>
       <div class="card set">
         <div class="set-row">
-          <div class="s-l"><div class="t">Thème</div><div class="d">clair, sombre ou auto</div></div>
+          <div class="s-l"><div class="t" data-i18n="theme">Thème</div><div class="d" data-i18n="theme_d">clair, sombre ou auto</div></div>
           <div class="seg" role="group" aria-label="Thème">
-            <button data-theme-opt="light" aria-pressed="false">Clair</button>
-            <button data-theme-opt="auto" aria-pressed="true">Auto</button>
-            <button data-theme-opt="dark" aria-pressed="false">Sombre</button>
+            <button data-theme-opt="light" aria-pressed="false" data-i18n="light">Clair</button>
+            <button data-theme-opt="auto" aria-pressed="true" data-i18n="auto">Auto</button>
+            <button data-theme-opt="dark" aria-pressed="false" data-i18n="dark">Sombre</button>
           </div>
         </div>
         <div class="set-row">
-          <div class="s-l"><div class="t">Publicité</div><div class="d">personnalisée ou non</div></div>
+          <div class="s-l"><div class="t" data-i18n="ads">Publicité</div><div class="d" data-i18n="ads_d">personnalisée ou non</div></div>
           <div class="seg" role="group" aria-label="Publicité">
-            <button data-ad-opt="personalized" aria-pressed="false">Perso.</button>
-            <button data-ad-opt="nonpersonalized" aria-pressed="false">Non perso.</button>
+            <button data-ad-opt="personalized" aria-pressed="false" data-i18n="perso_short">Perso.</button>
+            <button data-ad-opt="nonpersonalized" aria-pressed="false" data-i18n="nonperso_short">Non perso.</button>
           </div>
         </div>
         <div class="set-row">
-          <div class="s-l"><div class="t">Réinitialiser</div><div class="d">efface réglages et lieux</div></div>
-          <button class="btn ghost" id="btnReset">Effacer</button>
+          <div class="s-l"><div class="t" data-i18n="reset">Réinitialiser</div><div class="d" data-i18n="reset_d">efface réglages et lieux</div></div>
+          <button class="btn ghost" id="btnReset" data-i18n="clear">Effacer</button>
         </div>
       </div>
-      <p class="foot">CycloScore — prototype. Données météo : Open-Meteo (gratuit, sans clé).<br>Le score est calculé localement sur ton appareil.</p>
+      <p class="foot" data-i18n="foot_settings">CycloScore — prototype. Données météo : Open-Meteo (gratuit, sans clé).<br>Le score est calculé localement sur ton appareil.</p>
     </section>
   </main>
 
   <nav class="nav" role="tablist" aria-label="Navigation">
-    <button data-tab="score" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 12l5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Score</button>
-    <button data-tab="detail" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Détail</button>
-    <button data-tab="places" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/></svg>Lieux</button>
-    <button data-tab="set" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Réglages</button>
+    <button data-tab="score" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 12l5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-i18n="nav_score">Score</span></button>
+    <button data-tab="detail" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-i18n="nav_detail">Détail</span></button>
+    <button data-tab="places" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="nav_places">Lieux</span></button>
+    <button data-tab="set" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-i18n="nav_settings">Réglages</span></button>
   </nav>
 </div>
 <div class="toast" id="toast"></div>
 
 <!-- bandeau publicitaire (placeholder sur le web ; AdMob sur appareil) -->
-<div class="adslot" id="adSlot" hidden><span>Publicité</span></div>
+<div class="adslot" id="adSlot" hidden><span data-i18n="ad_label">Publicité</span></div>
 
 <!-- onboarding première ouverture -->
 <div id="onboard" hidden>
@@ -447,64 +447,249 @@ body.has-ad .app{padding-bottom:calc(72px + 56px)}
           <g stroke="#fff" stroke-width="2" stroke-linecap="round"><line x1="57" y1="72" x2="57" y2="56.5"/><line x1="57" y1="72" x2="70.5" y2="64.5"/><line x1="57" y1="72" x2="70.5" y2="79.5"/><line x1="57" y1="72" x2="57" y2="87.5"/><line x1="57" y1="72" x2="43.5" y2="79.5"/><line x1="57" y1="72" x2="43.5" y2="64.5"/></g>
         </g>
       </svg>
-      <h1>Bienvenue sur CycloScore</h1>
-      <p class="sub">Un score simple pour savoir quand enfourcher le vélo — trajet boulot ou sortie sportive.</p>
-      <p class="sub">On règle l'essentiel en 30 secondes.</p>
+      <h1 data-i18n="ob0_h1">Bienvenue sur CycloScore</h1>
+      <p class="sub" data-i18n="ob0_sub1">Un score simple pour savoir quand enfourcher le vélo — trajet boulot ou sortie sportive.</p>
+      <p class="sub" data-i18n="ob0_sub2">On règle l'essentiel en 30 secondes.</p>
     </div>
 
     <div class="ob-step" data-step="1">
-      <h1>Comment roules-tu&nbsp;?</h1>
-      <p class="sub">On adapte le score et les conseils à ton usage.</p>
+      <h1 data-i18n="ob1_h1">Comment roules-tu&nbsp;?</h1>
+      <p class="sub" data-i18n="ob1_sub">On adapte le score et les conseils à ton usage.</p>
       <div class="ob-choice">
-        <button class="ob-opt" data-usage="taff" aria-pressed="false"><span><span class="tt">Vélo taff</span><div class="d">trajets domicile-travail</div></span><svg class="tick" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <button class="ob-opt" data-usage="sport" aria-pressed="false"><span><span class="tt">Sortie sportive</span><div class="d">entraînement, loisir</div></span><svg class="tick" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <button class="ob-opt" data-usage="both" aria-pressed="true"><span><span class="tt">Les deux</span><div class="d">je bascule selon le jour</div></span><svg class="tick" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="ob-opt" data-usage="taff" aria-pressed="false"><span><span class="tt" data-i18n="ob_taff">Vélo taff</span><div class="d" data-i18n="ob_taff_d">trajets domicile-travail</div></span><svg class="tick" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="ob-opt" data-usage="sport" aria-pressed="false"><span><span class="tt" data-i18n="ob_sport">Sortie sportive</span><div class="d" data-i18n="ob_sport_d">entraînement, loisir</div></span><svg class="tick" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="ob-opt" data-usage="both" aria-pressed="true"><span><span class="tt" data-i18n="ob_both">Les deux</span><div class="d" data-i18n="ob_both_d">je bascule selon le jour</div></span><svg class="tick" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
     </div>
 
     <div class="ob-step" data-step="2">
-      <h1>Tes horaires de travail</h1>
-      <p class="sub">Pour te donner la meilleure heure de départ, aller et retour.</p>
-      <div class="ob-row"><div><div class="t">Début de journée</div><div class="d">arrivée au travail</div></div><input type="time" id="obStart" class="timein" value="09:00"></div>
-      <div class="ob-row"><div><div class="t">Fin de journée</div><div class="d">départ du travail</div></div><input type="time" id="obEnd" class="timein" value="17:00"></div>
-      <div class="ob-row"><div><div class="t">Temps de trajet</div><div class="d">un aller simple</div></div><div class="durwrap"><input type="range" id="obDur" min="5" max="60" step="5" value="20"><span id="obDurVal">20 min</span></div></div>
+      <h1 data-i18n="ob2_h1">Tes horaires de travail</h1>
+      <p class="sub" data-i18n="ob2_sub">Pour te donner la meilleure heure de départ, aller et retour.</p>
+      <div class="ob-row"><div><div class="t" data-i18n="ob2_start">Début de journée</div><div class="d" data-i18n="ob2_start_d">arrivée au travail</div></div><input type="time" id="obStart" class="timein" value="09:00"></div>
+      <div class="ob-row"><div><div class="t" data-i18n="ob2_end">Fin de journée</div><div class="d" data-i18n="ob2_end_d">départ du travail</div></div><input type="time" id="obEnd" class="timein" value="17:00"></div>
+      <div class="ob-row"><div><div class="t" data-i18n="ob2_dur">Temps de trajet</div><div class="d" data-i18n="ob2_dur_d">un aller simple</div></div><div class="durwrap"><input type="range" id="obDur" min="5" max="60" step="5" value="20"><span id="obDurVal">20 min</span></div></div>
     </div>
 
     <div class="ob-step" data-step="3">
-      <h1>Ta sensibilité</h1>
-      <p class="sub">Ça ajuste le score et le matériel conseillé à ton confort.</p>
-      <div class="ob-row"><div><div class="t">Au froid</div><div class="d">à droite = frileux</div></div><input class="ob-slider" type="range" id="obCold" min="-6" max="6" value="0"></div>
-      <div class="ob-row"><div><div class="t">À la pluie</div><div class="d">à gauche = plus strict</div></div><input class="ob-slider" type="range" id="obRain" min="-5" max="5" value="0"></div>
-      <div class="ob-row"><div><div class="t">Au vent</div><div class="d">à gauche = plus strict</div></div><input class="ob-slider" type="range" id="obWind" min="-5" max="5" value="0"></div>
+      <h1 data-i18n="ob3_h1">Ta sensibilité</h1>
+      <p class="sub" data-i18n="ob3_sub">Ça ajuste le score et le matériel conseillé à ton confort.</p>
+      <div class="ob-row"><div><div class="t" data-i18n="ob3_cold">Au froid</div><div class="d" data-i18n="ob3_cold_d">à droite = frileux</div></div><input class="ob-slider" type="range" id="obCold" min="-6" max="6" value="0"></div>
+      <div class="ob-row"><div><div class="t" data-i18n="ob3_rain">À la pluie</div><div class="d" data-i18n="ob3_rain_d">à gauche = plus strict</div></div><input class="ob-slider" type="range" id="obRain" min="-5" max="5" value="0"></div>
+      <div class="ob-row"><div><div class="t" data-i18n="ob3_wind">Au vent</div><div class="d" data-i18n="ob3_wind_d">à gauche = plus strict</div></div><input class="ob-slider" type="range" id="obWind" min="-5" max="5" value="0"></div>
     </div>
 
     <div class="ob-step" data-step="4">
-      <h1>Ta localisation</h1>
-      <p class="sub">Pour la météo réelle. Tu pourras aussi chercher une ville plus tard.</p>
-      <button class="btn" id="obGeo" style="width:100%"><svg viewBox="0 0 24 24" width="17" height="17" fill="none"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Me localiser</button>
-      <button class="btn ghost" id="obLater" style="width:100%">Plus tard</button>
+      <h1 data-i18n="ob4_h1">Ta localisation</h1>
+      <p class="sub" data-i18n="ob4_sub">Pour la météo réelle. Tu pourras aussi chercher une ville plus tard.</p>
+      <button class="btn" id="obGeo" style="width:100%"><svg viewBox="0 0 24 24" width="17" height="17" fill="none"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> <span data-i18n="locate_me">Me localiser</span></button>
+      <button class="btn ghost" id="obLater" style="width:100%" data-i18n="ob4_later">Plus tard</button>
       <p class="ob-legal" id="obGeoStatus"></p>
     </div>
 
     <div class="ob-step" data-step="5">
-      <h1>Gratuit, avec une pub</h1>
-      <p class="sub">CycloScore reste gratuit grâce à un petit bandeau publicitaire en bas de l'écran.</p>
+      <h1 data-i18n="ob5_h1">Gratuit, avec une pub</h1>
+      <p class="sub" data-i18n="ob5_sub">CycloScore reste gratuit grâce à un petit bandeau publicitaire en bas de l'écran.</p>
       <div class="ob-choice">
-        <button class="ob-opt" data-consent="personalized" aria-pressed="true"><span><span class="tt">Accepter les pubs personnalisées</span><div class="d">pubs plus pertinentes</div></span><svg class="tick" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <button class="ob-opt" data-consent="nonpersonalized" aria-pressed="false"><span><span class="tt">Pub non personnalisée</span><div class="d">sans suivi publicitaire</div></span><svg class="tick" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="ob-opt" data-consent="personalized" aria-pressed="true"><span><span class="tt" data-i18n="ob5_perso">Accepter les pubs personnalisées</span><div class="d" data-i18n="ob5_perso_d">pubs plus pertinentes</div></span><svg class="tick" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="ob-opt" data-consent="nonpersonalized" aria-pressed="false"><span><span class="tt" data-i18n="ob5_nonperso">Pub non personnalisée</span><div class="d" data-i18n="ob5_nonperso_d">sans suivi publicitaire</div></span><svg class="tick" width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
-      <p class="ob-legal">Tu peux changer d'avis à tout moment dans Réglages. La géolocalisation ne sert qu'à récupérer la météo et n'est pas conservée sur un serveur.</p>
+      <p class="ob-legal" data-i18n="ob5_legal">Tu peux changer d'avis à tout moment dans Réglages. La géolocalisation ne sert qu'à récupérer la météo et n'est pas conservée sur un serveur.</p>
     </div>
 
   </div>
   <div class="ob-nav">
-    <button id="obBack" class="btn ghost" hidden>Retour</button>
-    <button id="obNext" class="btn">Suivant</button>
+    <button id="obBack" class="btn ghost" hidden data-i18n="ob_back">Retour</button>
+    <button id="obNext" class="btn" data-i18n="ob_next">Suivant</button>
   </div>
 </div>
 
 <script>
 "use strict";
+
+/* ============================================================
+   i18n — français par défaut, anglais si la langue de
+   l'appareil n'est pas le français.
+   ============================================================ */
+const L = (function(){
+  try{
+    var n=(navigator.languages&&navigator.languages[0])||navigator.language||"en";
+    return /^fr/i.test(n)?"fr":"en";
+  }catch(e){ return "fr"; }
+})();
+const LOCALE = L==="fr" ? "fr-"+"FR" : "en-GB";
+try{ document.documentElement.lang = L; }catch(e){}
+
+const STR = {
+  fr:{
+    mode_taff_full:"Vélo taff", mode_sport_full:"Sortie sportive",
+    mode_taff_tag:"vélo taff", mode_sport_tag:"sortie sportive",
+    loading:"Chargement…", refresh:"Rafraîchir",
+    sample:"Données d'exemple — localise-toi ou cherche une ville pour la météo réelle.",
+    reason_default:"On récupère les conditions…",
+    gear_title:"Matériel conseillé", next_hours:"Prochaines heures", seven_days:"7 jours",
+    chart_aria:"Score heure par heure", cond_now:"Conditions maintenant",
+    foot_detail:"Chaque barre montre la contribution de la variable au score (plus la barre est courte et rouge, plus elle tire le score vers le bas).",
+    places:"Lieux", search_ph:"Chercher une ville…", ok:"OK", locate_me:"Me localiser", saved_title:"Enregistrés",
+    workday:"Journée de travail", mode_taff_hint:"mode vélo taff",
+    set_start:"Début de journée", set_start_d:"heure d'arrivée au travail",
+    set_end:"Fin de journée", set_end_d:"heure de départ du travail",
+    set_dur:"Temps de trajet", set_dur_d:"durée d'un aller simple",
+    settings:"Réglages",
+    cold_sens:"Sensibilité au froid", cold_sens_d:"« frileux » relève le seuil de confort",
+    rain_tol:"Tolérance à la pluie", strict_left:"à gauche = plus strict", wind_tol:"Tolérance au vent",
+    display:"Affichage", theme:"Thème", theme_d:"clair, sombre ou auto",
+    light:"Clair", auto:"Auto", dark:"Sombre",
+    ads:"Publicité", ads_d:"personnalisée ou non", perso_short:"Perso.", nonperso_short:"Non perso.",
+    reset:"Réinitialiser", reset_d:"efface réglages et lieux", clear:"Effacer",
+    foot_settings:"CycloScore — prototype. Données météo : Open-Meteo (gratuit, sans clé).<br>Le score est calculé localement sur ton appareil.",
+    nav_score:"Score", nav_detail:"Détail", nav_places:"Lieux", nav_settings:"Réglages", ad_label:"Publicité",
+    ob0_h1:"Bienvenue sur CycloScore",
+    ob0_sub1:"Un score simple pour savoir quand enfourcher le vélo — trajet boulot ou sortie sportive.",
+    ob0_sub2:"On règle l'essentiel en 30 secondes.",
+    ob1_h1:"Comment roules-tu&nbsp;?", ob1_sub:"On adapte le score et les conseils à ton usage.",
+    ob_taff:"Vélo taff", ob_taff_d:"trajets domicile-travail",
+    ob_sport:"Sortie sportive", ob_sport_d:"entraînement, loisir",
+    ob_both:"Les deux", ob_both_d:"je bascule selon le jour",
+    ob2_h1:"Tes horaires de travail", ob2_sub:"Pour te donner la meilleure heure de départ, aller et retour.",
+    ob2_start:"Début de journée", ob2_start_d:"arrivée au travail",
+    ob2_end:"Fin de journée", ob2_end_d:"départ du travail",
+    ob2_dur:"Temps de trajet", ob2_dur_d:"un aller simple",
+    ob3_h1:"Ta sensibilité", ob3_sub:"Ça ajuste le score et le matériel conseillé à ton confort.",
+    ob3_cold:"Au froid", ob3_cold_d:"à droite = frileux",
+    ob3_rain:"À la pluie", ob3_rain_d:"à gauche = plus strict",
+    ob3_wind:"Au vent", ob3_wind_d:"à gauche = plus strict",
+    ob4_h1:"Ta localisation", ob4_sub:"Pour la météo réelle. Tu pourras aussi chercher une ville plus tard.", ob4_later:"Plus tard",
+    ob5_h1:"Gratuit, avec une pub",
+    ob5_sub:"CycloScore reste gratuit grâce à un petit bandeau publicitaire en bas de l'écran.",
+    ob5_perso:"Accepter les pubs personnalisées", ob5_perso_d:"pubs plus pertinentes",
+    ob5_nonperso:"Pub non personnalisée", ob5_nonperso_d:"sans suivi publicitaire",
+    ob5_legal:"Conformément au RGPD, les publicités personnalisées nécessitent votre consentement. Google AdMob et ses partenaires peuvent utiliser un identifiant publicitaire pour diffuser et mesurer les annonces. Vous pouvez modifier ou retirer ce choix à tout moment dans Réglages. La géolocalisation sert uniquement à la météo et n'est pas conservée sur un serveur. <a href='https://standesv.github.io/CycloScore/' target='_blank' rel='noopener'>Politique de confidentialité</a>.",
+    ob_back:"Retour", ob_next:"Suivant", ob_start_btn:"Commencer",
+    band_good:"Favorable", band_warn:"Mitigé", band_bad:"Déconseillé",
+    cap_ice:"Risque de verglas", cap_storm:"Orage annoncé", cap_gust:"Rafales violentes",
+    dom_good:"conditions globalement bonnes", reason_good:"Conditions globalement bonnes",
+    gear_none:"Tenue classique — rien de particulier à prévoir.",
+    gear_hint_taff:"pour ton trajet", gear_hint_sport:"pour ta sortie",
+    hero_taff:"Trajets d'aujourd'hui", hero_today:"Aujourd'hui",
+    commute_to:"Aller au travail", commute_from:"Retour du travail",
+    commute_leave:"partez ", commute_around:"vers ",
+    tomorrow:"demain ", afterTomorrow:"après-demain ", now_prefix:"maintenant · ",
+    best_whole_a:"Conditions favorables sur tout l'horizon (", best_whole_b:" h à venir).",
+    best_slot:"Meilleur créneau : ", best_around:"vers ", best_none:"Aucun créneau franchement favorable sur l'horizon.",
+    daily_hint_taff:"score des trajets aller/retour", daily_hint_sport:"score moyen en journée",
+    det_precip:"Précipitations", det_wind:"Vent", det_feels:"Ressenti", det_vis:"Visibilité",
+    det_humuv:"Humidité / UV", det_air:"Qualité de l'air", det_sun:"Soleil",
+    det_gust:"raf.", det_actual:"réel", det_day:"jour", det_night:"nuit", det_sunrise:"lever", det_sunset:"coucher",
+    toast_updated:"Météo mise à jour", toast_wx_unavail:"Météo indisponible — réessaie",
+    toast_search_unavail:"Recherche indisponible", toast_locating:"Localisation…",
+    toast_geo_unavail:"Géoloc non disponible", toast_loc_denied:"Localisation refusée", toast_reset:"Réinitialisé",
+    saved_empty:"Aucun lieu enregistré. Cherche une ville puis touche l'étoile.",
+    open_label:"ouvrir", no_result:"Aucun résultat.", save_aria:"Enregistrer",
+    my_position:"Ma position", sample_label:"Exemple",
+    obgeo_unavail:"Géolocalisation indisponible.", obgeo_locating:"Localisation…",
+    obgeo_saved:"Position enregistrée.", obgeo_denied:"Localisation refusée — tu pourras chercher une ville dans Lieux.",
+    factor_rain:["conditions sèches","averses possibles","pluie marquée"],
+    factor_wind:["vent faible","vent soutenu","vent fort, rafales"],
+    factor_temp:["température agréable","un peu frais/chaud","température difficile"],
+    factor_vis:["bonne visibilité","luminosité moyenne","faible visibilité / nuit"],
+    factor_humuv:["air confortable","UV ou air lourd","UV fort / air étouffant"],
+    aqi:["très bon","bon","moyen","médiocre","mauvais","très mauvais"],
+    dirs:["N","NE","E","SE","S","SO","O","NO"],
+    gear_rainjacket:"Veste de pluie", gear_mudguards:"Garde-boue", gear_lights:"Éclairage",
+    gear_vest:"Gilet réfléchissant", gear_windbreaker:"Coupe-vent", gear_gloves:"Gants",
+    gear_neck:"Tour de cou", gear_tights:"Collant long", gear_overshoes:"Sur-chaussures",
+    gear_sunglasses:"Lunettes de soleil", gear_sunscreen:"Crème solaire", gear_hydration:"Hydratation +",
+    gear_airwarn:"Prudence (air pollué)"
+  },
+  en:{
+    mode_taff_full:"Bike commute", mode_sport_full:"Sport ride",
+    mode_taff_tag:"bike commute", mode_sport_tag:"sport ride",
+    loading:"Loading…", refresh:"Refresh",
+    sample:"Sample data — use your location or search a city for real weather.",
+    reason_default:"Fetching conditions…",
+    gear_title:"Recommended gear", next_hours:"Next hours", seven_days:"7 days",
+    chart_aria:"Hourly score", cond_now:"Current conditions",
+    foot_detail:"Each bar shows how much the variable contributes to the score (the shorter and redder the bar, the more it pulls the score down).",
+    places:"Places", search_ph:"Search a city…", ok:"OK", locate_me:"Use my location", saved_title:"Saved",
+    workday:"Workday", mode_taff_hint:"bike commute mode",
+    set_start:"Day start", set_start_d:"arrival time at work",
+    set_end:"Day end", set_end_d:"departure time from work",
+    set_dur:"Commute time", set_dur_d:"one-way duration",
+    settings:"Settings",
+    cold_sens:"Cold sensitivity", cold_sens_d:"'chilly' raises the comfort threshold",
+    rain_tol:"Rain tolerance", strict_left:"left = stricter", wind_tol:"Wind tolerance",
+    display:"Display", theme:"Theme", theme_d:"light, dark or auto",
+    light:"Light", auto:"Auto", dark:"Dark",
+    ads:"Ads", ads_d:"personalized or not", perso_short:"Pers.", nonperso_short:"Non-pers.",
+    reset:"Reset", reset_d:"clears settings and places", clear:"Clear",
+    foot_settings:"CycloScore. Weather data: Open-Meteo (free, no key).<br>The score is computed locally on your device.",
+    nav_score:"Score", nav_detail:"Details", nav_places:"Places", nav_settings:"Settings", ad_label:"Advertisement",
+    ob0_h1:"Welcome to CycloScore",
+    ob0_sub1:"A simple score to know when to hop on the bike — commute or sport ride.",
+    ob0_sub2:"Let's set the essentials in 30 seconds.",
+    ob1_h1:"How do you ride?", ob1_sub:"We tailor the score and tips to how you use it.",
+    ob_taff:"Bike commute", ob_taff_d:"home-work trips",
+    ob_sport:"Sport ride", ob_sport_d:"training, leisure",
+    ob_both:"Both", ob_both_d:"I switch depending on the day",
+    ob2_h1:"Your work hours", ob2_sub:"To give you the best time to leave, both ways.",
+    ob2_start:"Day start", ob2_start_d:"arrival at work",
+    ob2_end:"Day end", ob2_end_d:"departure from work",
+    ob2_dur:"Commute time", ob2_dur_d:"one way",
+    ob3_h1:"Your sensitivity", ob3_sub:"It adjusts the score and recommended gear to your comfort.",
+    ob3_cold:"To cold", ob3_cold_d:"right = chilly",
+    ob3_rain:"To rain", ob3_rain_d:"left = stricter",
+    ob3_wind:"To wind", ob3_wind_d:"left = stricter",
+    ob4_h1:"Your location", ob4_sub:"For real weather. You can also search a city later.", ob4_later:"Later",
+    ob5_h1:"Free, with one ad",
+    ob5_sub:"CycloScore stays free thanks to a small ad banner at the bottom of the screen.",
+    ob5_perso:"Accept personalized ads", ob5_perso_d:"more relevant ads",
+    ob5_nonperso:"Non-personalized ads", ob5_nonperso_d:"no ad tracking",
+    ob5_legal:"Under the GDPR, personalized ads require your consent. Google AdMob and its partners may use an advertising identifier to serve and measure ads. You can change or withdraw this choice anytime in Settings. Location is used only for weather and is not stored on a server. <a href='https://standesv.github.io/CycloScore/' target='_blank' rel='noopener'>Privacy policy</a>.",
+    ob_back:"Back", ob_next:"Next", ob_start_btn:"Start",
+    band_good:"Good", band_warn:"Mixed", band_bad:"Not advised",
+    cap_ice:"Ice risk", cap_storm:"Storm expected", cap_gust:"Violent gusts",
+    dom_good:"overall good conditions", reason_good:"Overall good conditions",
+    gear_none:"Normal outfit — nothing special needed.",
+    gear_hint_taff:"for your commute", gear_hint_sport:"for your ride",
+    hero_taff:"Today's commutes", hero_today:"Today",
+    commute_to:"Ride to work", commute_from:"Ride home",
+    commute_leave:"leave ", commute_around:"around ",
+    tomorrow:"tomorrow ", afterTomorrow:"in two days ", now_prefix:"now · ",
+    best_whole_a:"Favorable conditions over the whole horizon (next ", best_whole_b:" h).",
+    best_slot:"Best window: ", best_around:"around ", best_none:"No clearly favorable window on the horizon.",
+    daily_hint_taff:"score of to/from commutes", daily_hint_sport:"average daytime score",
+    det_precip:"Precipitation", det_wind:"Wind", det_feels:"Feels like", det_vis:"Visibility",
+    det_humuv:"Humidity / UV", det_air:"Air quality", det_sun:"Sun",
+    det_gust:"gust", det_actual:"actual", det_day:"day", det_night:"night", det_sunrise:"sunrise", det_sunset:"sunset",
+    toast_updated:"Weather updated", toast_wx_unavail:"Weather unavailable — try again",
+    toast_search_unavail:"Search unavailable", toast_locating:"Locating…",
+    toast_geo_unavail:"Geolocation unavailable", toast_loc_denied:"Location denied", toast_reset:"Reset done",
+    saved_empty:"No saved place. Search a city then tap the star.",
+    open_label:"open", no_result:"No result.", save_aria:"Save",
+    my_position:"My location", sample_label:"Sample",
+    obgeo_unavail:"Geolocation unavailable.", obgeo_locating:"Locating…",
+    obgeo_saved:"Location saved.", obgeo_denied:"Location denied — you can search a city in Places.",
+    factor_rain:["dry conditions","showers possible","heavy rain"],
+    factor_wind:["light wind","strong wind","high wind, gusts"],
+    factor_temp:["pleasant temperature","a bit cool/warm","tough temperature"],
+    factor_vis:["good visibility","medium light","low visibility / night"],
+    factor_humuv:["comfortable air","UV or heavy air","strong UV / stifling air"],
+    aqi:["very good","good","moderate","poor","bad","very bad"],
+    dirs:["N","NE","E","SE","S","SW","W","NW"],
+    gear_rainjacket:"Rain jacket", gear_mudguards:"Mudguards", gear_lights:"Lights",
+    gear_vest:"Reflective vest", gear_windbreaker:"Windbreaker", gear_gloves:"Gloves",
+    gear_neck:"Neck gaiter", gear_tights:"Long tights", gear_overshoes:"Overshoes",
+    gear_sunglasses:"Sunglasses", gear_sunscreen:"Sunscreen", gear_hydration:"Extra hydration",
+    gear_airwarn:"Caution (polluted air)"
+  }
+};
+function tr(k){ var o=STR[L]; var v=o&&o[k]; if(v==null) v=STR.fr[k]; return v==null?k:v; }
+function applyI18n(){
+  document.querySelectorAll("[data-i18n]").forEach(function(el){ var v=tr(el.getAttribute("data-i18n")); if(v!=null) el.innerHTML=v; });
+  document.querySelectorAll("[data-i18n-ph]").forEach(function(el){ el.setAttribute("placeholder", tr(el.getAttribute("data-i18n-ph"))); });
+  document.querySelectorAll("[data-i18n-aria]").forEach(function(el){ el.setAttribute("aria-label", tr(el.getAttribute("data-i18n-aria"))); });
+}
+
 /* ============================================================
    CycloScore — moteur de score + app
    ============================================================ */
@@ -591,9 +776,9 @@ function scoreHour(h, mode, sens){
   // dangers : plafonnent fort ET déclenchent une alerte
   const caps = [];
   let cap = 100;
-  if(h.feels <= 0.5 && (h.hum >= 85 || h.rain > 0.1)){ cap = Math.min(cap,20); caps.push("Risque de verglas"); }
-  if(h.code>=95){ cap = Math.min(cap,15); caps.push("Orage annoncé"); }
-  if(h.gust > 60){ cap = Math.min(cap,25); caps.push("Rafales violentes"); }
+  if(h.feels <= 0.5 && (h.hum >= 85 || h.rain > 0.1)){ cap = Math.min(cap,20); caps.push(tr("cap_ice")); }
+  if(h.code>=95){ cap = Math.min(cap,15); caps.push(tr("cap_storm")); }
+  if(h.gust > 60){ cap = Math.min(cap,25); caps.push(tr("cap_gust")); }
 
   // plafond selon le TYPE de temps (code WMO) : une heure "pluie" ne peut pas bien scorer,
   // ce qui écarte nettement une journée pluvieuse d'une journée ensoleillée.
@@ -616,18 +801,15 @@ function scoreHour(h, mode, sens){
 
 /* ---- bande de couleur + verdict ---- */
 function band(score){
-  if(score>=70) return {key:"good", color:"var(--good)", tint:"var(--good-tint)", word:"Favorable"};
-  if(score>=40) return {key:"warn", color:"var(--warn)", tint:"var(--warn-tint)", word:"Mitigé"};
-  return {key:"bad", color:"var(--bad)", tint:"var(--bad-tint)", word:"Déconseillé"};
+  if(score>=70) return {key:"good", color:"var(--good)", tint:"var(--good-tint)", word:tr("band_good")};
+  if(score>=40) return {key:"warn", color:"var(--warn)", tint:"var(--warn-tint)", word:tr("band_warn")};
+  return {key:"bad", color:"var(--bad)", tint:"var(--bad-tint)", word:tr("band_bad")};
 }
 
 /* ---- facteur dominant (variable la plus pénalisante) ---- */
 const FACTOR_MSG = {
-  rain:["conditions sèches","averses possibles","pluie marquée"],
-  wind:["vent faible","vent soutenu","vent fort, rafales"],
-  temp:["température agréable","un peu frais/chaud","température difficile"],
-  vis:["bonne visibilité","luminosité moyenne","faible visibilité / nuit"],
-  humuv:["air confortable","UV ou air lourd","UV fort / air étouffant"]
+  rain:STR[L].factor_rain, wind:STR[L].factor_wind, temp:STR[L].factor_temp,
+  vis:STR[L].factor_vis, humuv:STR[L].factor_humuv
 };
 function dominant(res){
   if(res.caps.length) return res.caps[0].toLowerCase();
@@ -636,7 +818,7 @@ function dominant(res){
     if(res.sub[k] < wv){ wv=res.sub[k]; worst=k; }
   }
   const lvl = wv>=0.7?0 : wv>=0.4?1 : 2;
-  if(wv>=0.82) return "conditions globalement bonnes";
+  if(wv>=0.82) return tr("dom_good");
   return FACTOR_MSG[worst][lvl];
 }
 
@@ -667,20 +849,21 @@ function weatherIcon(cat){
   }
   return "";
 }
-const DIRS = ["N","NE","E","SE","S","SO","O","NO"];
+const DIRS = STR[L].dirs;
 const dirName = deg => DIRS[Math.round(((deg%360)/45))%8];
 function dnear(d){
   const now=new Date();
   const a=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const b=new Date(d.getFullYear(),d.getMonth(),d.getDate());
   const diff=Math.round((b-a)/86400000);
-  return diff<=0?"" : diff===1?"demain " : diff===2?"après-demain " : (d.toLocaleDateString("fr-FR",{weekday:"short"})+" ");
+  return diff<=0?"" : diff===1?tr("tomorrow") : diff===2?tr("afterTomorrow") : (d.toLocaleDateString(LOCALE,{weekday:"short"})+" ");
 }
 
 /* ---- qualité de l'air (European AQI) ---- */
 function aqiLabel(a){
-  if(a<=20) return "très bon"; if(a<=40) return "bon"; if(a<=60) return "moyen";
-  if(a<=80) return "médiocre"; if(a<=100) return "mauvais"; return "très mauvais";
+  const A=STR[L].aqi;
+  if(a<=20) return A[0]; if(a<=40) return A[1]; if(a<=60) return A[2];
+  if(a<=80) return A[3]; if(a<=100) return A[4]; return A[5];
 }
 
 /* ---- matériel conseillé : signaux qui s'activent selon les conditions + le mode ---- */
@@ -696,19 +879,19 @@ const isCold  = (h,s)=> h.feels <= (8 + S(s).cold);
 const isVCold = (h,s)=> h.feels <= (4 + S(s).cold);
 const isDark  = h => !h.isDay || h.vis<4000;
 const GEAR = [
-  { label:"Veste de pluie",        modes:["taff","sport"], test:isRainy },
-  { label:"Garde-boue",            modes:["taff"],         test:isRainy },
-  { label:"Éclairage",             modes:["taff","sport"], test:(h)=>isDark(h) },
-  { label:"Gilet réfléchissant",   modes:["taff"],         test:(h)=>isDark(h) },
-  { label:"Coupe-vent",            modes:["taff","sport"], test:isWindy },
-  { label:"Gants",                 modes:["taff","sport"], test:isCold },
-  { label:"Tour de cou",           modes:["taff","sport"], test:isVCold },
-  { label:"Collant long",          modes:["sport"],        test:(h,s)=> h.feels <= (10 + S(s).cold) },
-  { label:"Sur-chaussures",        modes:["sport"],        test:(h,s)=> isVCold(h,s) || (isRainy(h,s) && h.feels <= (12 + S(s).cold)) },
-  { label:"Lunettes de soleil",    modes:["sport"],        test:(h,s)=> h.isDay && h.uv>=4 && !isRainy(h,s) },
-  { label:"Crème solaire",         modes:["sport"],        test:h => h.uv>=6 },
-  { label:"Hydratation +",         modes:["sport"],        test:h => h.feels>=24 },
-  { label:"Prudence (air pollué)", modes:["taff","sport"], test:h => typeof h.aqi==="number" && h.aqi>=80 }
+  { key:"gear_rainjacket",  modes:["taff","sport"], test:isRainy },
+  { key:"gear_mudguards",   modes:["taff"],         test:isRainy },
+  { key:"gear_lights",      modes:["taff","sport"], test:(h)=>isDark(h) },
+  { key:"gear_vest",        modes:["taff"],         test:(h)=>isDark(h) },
+  { key:"gear_windbreaker", modes:["taff","sport"], test:isWindy },
+  { key:"gear_gloves",      modes:["taff","sport"], test:isCold },
+  { key:"gear_neck",        modes:["taff","sport"], test:isVCold },
+  { key:"gear_tights",      modes:["sport"],        test:(h,s)=> h.feels <= (10 + S(s).cold) },
+  { key:"gear_overshoes",   modes:["sport"],        test:(h,s)=> isVCold(h,s) || (isRainy(h,s) && h.feels <= (12 + S(s).cold)) },
+  { key:"gear_sunglasses",  modes:["sport"],        test:(h,s)=> h.isDay && h.uv>=4 && !isRainy(h,s) },
+  { key:"gear_sunscreen",   modes:["sport"],        test:h => h.uv>=6 },
+  { key:"gear_hydration",   modes:["sport"],        test:h => h.feels>=24 },
+  { key:"gear_airwarn",     modes:["taff","sport"], test:h => typeof h.aqi==="number" && h.aqi>=80 }
 ];
 function gearCheck(){
   return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -842,15 +1025,15 @@ async function loadWeather(loc){
     store.set("loc", loc);
     store.set("cache", {loc, at:Date.now()});
     render();
-    toast("Météo mise à jour");
+    toast(tr("toast_updated"));
   }catch(e){
-    toast("Météo indisponible — réessaie");
+    toast(tr("toast_wx_unavail"));
     if(!state.data){ state.data = normalize(sampleData()); render(); }
   }finally{ setLoading(false); }
 }
 
 async function geocode(name){
-  const u = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=6&language=fr&format=json`;
+  const u = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=6&language=${L}&format=json`;
   const r = await fetch(u); if(!r.ok) throw new Error("geo");
   const j = await r.json();
   return (j.results||[]).map(x=>({
@@ -939,7 +1122,7 @@ function nextCommute(){
 function render(){
   if(!state.data) return;
   $("#sampleBadge").hidden = !state.isSample;
-  $("#locName").textContent = state.loc ? state.loc.name : "Exemple";
+  $("#locName").textContent = state.loc ? state.loc.name : tr("sample_label");
   renderScore();
   renderGear();
   renderHourly();
@@ -973,11 +1156,11 @@ function renderScore(){
   $("#scoreNum").textContent = big;
   $("#scoreNum").style.color = b.color;
   $("#verdict").textContent = b.word;
-  $("#heroEyebrow").textContent = state.mode==="taff" ? "Trajets d'aujourd'hui" : "Aujourd'hui";
+  $("#heroEyebrow").textContent = state.mode==="taff" ? tr("hero_taff") : tr("hero_today");
 
   const res = scoreHour(focus, state.mode, state.sens);
   $("#reason").textContent = res.caps.length ? cap1(res.caps[0])
-    : (res.score>=82 ? "Conditions globalement bonnes" : cap1(dominant(res)));
+    : (res.score>=82 ? tr("reason_good") : cap1(dominant(res)));
 
   const a = $("#alertBox");
   if(res.caps.length){ a.classList.add("show"); $("#alertText").textContent = res.caps.join(" · "); }
@@ -986,16 +1169,16 @@ function renderScore(){
   // ligne trajet : meilleure heure pour partir (aller / retour)
   const cl = $("#commuteLine");
   if(state.mode==="taff" && commute && best){
-    const t = best.h.date.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
-    const when = commute.dayDate.toDateString()===today.toDateString() ? "" : "demain ";
-    const label = commute.dir==="aller" ? "Aller au travail" : "Retour du travail";
+    const t = best.h.date.toLocaleTimeString(LOCALE,{hour:"2-digit",minute:"2-digit"});
+    const when = commute.dayDate.toDateString()===today.toDateString() ? "" : tr("tomorrow");
+    const label = commute.dir==="aller" ? tr("commute_to") : tr("commute_from");
     cl.innerHTML =
       `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`+
-      `<span><b>${label}</b> · partez ${when}vers <b>${t}</b> <span class="cl-score">${best.score}</span></span>`;
+      `<span><b>${label}</b> · ${tr("commute_leave")}${when}${tr("commute_around")}<b>${t}</b> <span class="cl-score">${best.score}</span></span>`;
     cl.hidden = false;
   } else { cl.hidden = true; }
 
-  $("#nowLabel").textContent = "maintenant · " + nowH.date.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  $("#nowLabel").textContent = tr("now_prefix") + nowH.date.toLocaleTimeString(LOCALE,{hour:"2-digit",minute:"2-digit"});
 }
 
 function renderGear(){
@@ -1003,12 +1186,12 @@ function renderGear(){
   const items = GEAR.filter(g => g.modes.includes(state.mode) && g.test(h, state.sens));
   const box = $("#gear");
   if(!items.length){
-    box.innerHTML = `<div class="gear-none">Tenue classique — rien de particulier à prévoir.</div>`;
+    box.innerHTML = `<div class="gear-none">${tr("gear_none")}</div>`;
     $("#gearHint").textContent = "";
     return;
   }
-  $("#gearHint").textContent = state.mode==="taff" ? "pour ton trajet" : "pour ta sortie";
-  box.innerHTML = items.map(g => `<span class="chip">${gearCheck()}${g.label}</span>`).join("");
+  $("#gearHint").textContent = state.mode==="taff" ? tr("gear_hint_taff") : tr("gear_hint_sport");
+  box.innerHTML = items.map(g => `<span class="chip">${gearCheck()}${tr(g.key)}</span>`).join("");
 }
 
 function seriesFromNow(){
@@ -1075,30 +1258,30 @@ function renderHourly(){
     now0 + ticks;
 
   // texte meilleur créneau
-  const f=d=>d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  const f=d=>d.toLocaleTimeString(LOCALE,{hour:"2-digit",minute:"2-digit"});
   if(best && wholeHorizon){
-    $("#bestText").textContent = `Conditions favorables sur tout l'horizon (${state.range} h à venir).`;
+    $("#bestText").textContent = tr("best_whole_a")+state.range+tr("best_whole_b");
     $(".best .dot").style.background="var(--good)";
   }else if(best){
     const a=data[best.a].h.date, b=data[best.b].h.date;
-    const span = best.a===best.b ? `vers ${f(a)}` : `${f(a)} – ${f(b)}`;
-    $("#bestText").innerHTML = `Meilleur créneau : <b>${dnear(a)}${span}</b>`;
+    const span = best.a===best.b ? `${tr("best_around")}${f(a)}` : `${f(a)} – ${f(b)}`;
+    $("#bestText").innerHTML = tr("best_slot")+`<b>${dnear(a)}${span}</b>`;
     $(".best .dot").style.background="var(--good)";
   }else{
-    $("#bestText").textContent = "Aucun créneau franchement favorable sur l'horizon.";
+    $("#bestText").textContent = tr("best_none");
     $(".best .dot").style.background="var(--warn)";
   }
 }
 
 function renderDaily(){
   const box=$("#daily"); box.innerHTML="";
-  const dh=$("#dailyHint"); if(dh) dh.textContent = state.mode==="taff" ? "score des trajets aller/retour" : "score moyen en journée";
+  const dh=$("#dailyHint"); if(dh) dh.textContent = state.mode==="taff" ? tr("daily_hint_taff") : tr("daily_hint_sport");
   state.data.days.slice(0,7).forEach((d)=>{
     // même calcul que le grand score du haut (trajets en taff, journée en sportif)
     const avg = dayScore(d.date, state.mode, state.sens);
     const b=band(avg==null?0:avg);
     const w=wmo(d.code);
-    const name=d.date.toLocaleDateString("fr-FR",{weekday:"short"});
+    const name=d.date.toLocaleDateString(LOCALE,{weekday:"short"});
     const row=document.createElement("div"); row.className="day";
     row.innerHTML=
       `<span class="d-name">${name}</span>`+
@@ -1113,22 +1296,22 @@ function renderDaily(){
 function renderDetail(){
   const i=nowIndex(); const h=state.data.hours[i];
   const res=scoreHour(h,state.mode,state.sens);
-  $("#detailTime").textContent = h.date.toLocaleString("fr-FR",{weekday:"short",hour:"2-digit",minute:"2-digit"});
+  $("#detailTime").textContent = h.date.toLocaleString(LOCALE,{weekday:"short",hour:"2-digit",minute:"2-digit"});
   const rows=[
-    {ic:"rain", l:"Précipitations", v:`${h.rain.toFixed(1)} mm · ${h.prob}%`, s:res.sub.rain},
-    {ic:"wind", l:"Vent", v:`${Math.round(h.wind)} km/h ${dirName(h.dir)} · raf. ${Math.round(h.gust)}`, s:res.sub.wind},
-    {ic:"temp", l:"Ressenti", v:`${Math.round(h.feels)}° (réel ${Math.round(h.temp)}°)`, s:res.sub.temp},
-    {ic:"vis", l:"Visibilité", v:`${(h.vis/1000).toFixed(0)} km · ${h.isDay?"jour":"nuit"}`, s:res.sub.vis},
-    {ic:"humuv", l:"Humidité / UV", v:`${h.hum}% · UV ${h.uv.toFixed(0)}`, s:res.sub.humuv}
+    {ic:"rain", l:tr("det_precip"), v:`${h.rain.toFixed(1)} mm · ${h.prob}%`, s:res.sub.rain},
+    {ic:"wind", l:tr("det_wind"), v:`${Math.round(h.wind)} km/h ${dirName(h.dir)} · ${tr("det_gust")} ${Math.round(h.gust)}`, s:res.sub.wind},
+    {ic:"temp", l:tr("det_feels"), v:`${Math.round(h.feels)}° (${tr("det_actual")} ${Math.round(h.temp)}°)`, s:res.sub.temp},
+    {ic:"vis", l:tr("det_vis"), v:`${(h.vis/1000).toFixed(0)} km · ${h.isDay?tr("det_day"):tr("det_night")}`, s:res.sub.vis},
+    {ic:"humuv", l:tr("det_humuv"), v:`${h.hum}% · UV ${h.uv.toFixed(0)}`, s:res.sub.humuv}
   ];
   if(typeof h.aqi==="number"){
-    rows.push({ic:"air", l:"Qualité de l'air", v:`AQI ${Math.round(h.aqi)} · ${aqiLabel(h.aqi)}`, s:clamp(1-(h.aqi-20)/100)});
+    rows.push({ic:"air", l:tr("det_air"), v:`AQI ${Math.round(h.aqi)} · ${aqiLabel(h.aqi)}`, s:clamp(1-(h.aqi-20)/100)});
   }
   // lever / coucher du soleil (ligne d'info, sans contribution)
   const today = state.data.days.find(d => d.date.toDateString()===h.date.toDateString()) || state.data.days[0];
   if(today && today.sunrise){
-    const ft = t => new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
-    rows.push({ic:"sun", l:"Soleil", v:`lever ${ft(today.sunrise)} · coucher ${ft(today.sunset)}`, s:null});
+    const ft = t => new Date(t).toLocaleTimeString(LOCALE,{hour:"2-digit",minute:"2-digit"});
+    rows.push({ic:"sun", l:tr("det_sun"), v:`${tr("det_sunrise")} ${ft(today.sunrise)} · ${tr("det_sunset")} ${ft(today.sunset)}`, s:null});
   }
   const ICON={rain:"rain",wind:"storm",temp:"clear",vis:"fog",humuv:"cloud",air:"air",sun:"clear"};
   const box=$("#cond"); box.innerHTML="";
@@ -1136,7 +1319,7 @@ function renderDetail(){
     const el=document.createElement("div"); el.className="cond-row";
     let contrib;
     if(r.s===null){
-      contrib = `<span class="cond-contrib"><span class="pct">${h.isDay?"jour":"nuit"}</span></span>`;
+      contrib = `<span class="cond-contrib"><span class="pct">${h.isDay?tr("det_day"):tr("det_night")}</span></span>`;
     }else{
       const pct=Math.round(r.s*100);
       const col = r.s>=0.7?"var(--good)":r.s>=0.4?"var(--warn)":"var(--bad)";
@@ -1153,14 +1336,14 @@ function renderDetail(){
 function renderSaved(){
   const box=$("#savedList"); box.innerHTML="";
   if(!state.saved.length){
-    box.innerHTML=`<div style="padding:12px;color:var(--muted);font-size:13.5px">Aucun lieu enregistré. Cherche une ville puis touche l'étoile.</div>`;
+    box.innerHTML=`<div style="padding:12px;color:var(--muted);font-size:13.5px">${tr("saved_empty")}</div>`;
     return;
   }
   state.saved.forEach((p,idx)=>{
     const el=document.createElement("button"); el.className="res";
     el.innerHTML=`<svg class="pin" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" stroke="currentColor" stroke-width="2"/></svg>`+
       `<span style="flex:1;min-width:0"><div class="r-name">${p.name}</div><div class="r-sub">${p.sub||""}</div></span>`+
-      `<span style="color:var(--muted);font-size:12px">ouvrir</span>`;
+      `<span style="color:var(--muted);font-size:12px">${tr("open_label")}</span>`;
     el.onclick=()=>{ loadWeather(p); go("score"); };
     box.appendChild(el);
   });
@@ -1179,7 +1362,7 @@ function setMode(m){
   state.mode=m; store.set("mode",m);
   $("#mTaff").setAttribute("aria-pressed", m==="taff");
   $("#mSport").setAttribute("aria-pressed", m==="sport");
-  $("#modeTag").textContent = m==="taff"?"vélo taff":"sortie sportive";
+  $("#modeTag").textContent = m==="taff"?tr("mode_taff_tag"):tr("mode_sport_tag");
   render();
 }
 function setRange(r){
@@ -1208,13 +1391,13 @@ function cap1(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
 
 function renderResults(list){
   const box=$("#results"); box.innerHTML="";
-  if(!list.length){ box.innerHTML=`<div style="padding:12px;color:var(--muted);font-size:13.5px">Aucun résultat.</div>`; return; }
+  if(!list.length){ box.innerHTML=`<div style="padding:12px;color:var(--muted);font-size:13.5px">${tr("no_result")}</div>`; return; }
   list.forEach(p=>{
     const saved=state.saved.some(s=>s.lat===p.lat&&s.lon===p.lon);
     const el=document.createElement("div"); el.className="res";
     el.innerHTML=`<svg class="pin" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11Z" stroke="currentColor" stroke-width="2"/></svg>`+
       `<span style="flex:1;min-width:0"><div class="r-name">${p.name}</div><div class="r-sub">${p.sub||""}</div></span>`+
-      `<button class="star" aria-label="Enregistrer" style="background:transparent;border:0;padding:6px;color:${saved?'var(--accent)':'var(--muted)'}">`+
+      `<button class="star" aria-label="${tr('save_aria')}" style="background:transparent;border:0;padding:6px;color:${saved?'var(--accent)':'var(--muted)'}">`+
       `<svg viewBox="0 0 24 24" width="20" height="20" fill="${saved?'currentColor':'none'}"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9L12 3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>`;
     el.querySelector("span:nth-child(2)").onclick=()=>{ loadWeather(p); go("score"); };
     el.querySelector(".star").onclick=(ev)=>{ ev.stopPropagation(); toggleSave(p); renderResults(list); };
@@ -1230,20 +1413,20 @@ function toggleSave(p){
 async function doSearch(){
   const q=$("#searchInput").value.trim(); if(!q) return;
   try{ renderResults(await geocode(q)); }
-  catch(e){ toast("Recherche indisponible"); }
+  catch(e){ toast(tr("toast_search_unavail")); }
 }
 function geolocate(){
-  if(!navigator.geolocation){ toast("Géoloc non disponible"); return; }
-  toast("Localisation…");
+  if(!navigator.geolocation){ toast(tr("toast_geo_unavail")); return; }
+  toast(tr("toast_locating"));
   navigator.geolocation.getCurrentPosition(
     pos=>{
-      const loc={name:"Ma position", sub:"", lat:pos.coords.latitude, lon:pos.coords.longitude};
+      const loc={name:tr("my_position"), sub:"", lat:pos.coords.latitude, lon:pos.coords.longitude};
       // nom inverse best-effort
-      fetch(`https://geocoding-api.open-meteo.com/v1/search?name=&latitude=${loc.lat}&longitude=${loc.lon}&count=1&language=fr`)
+      fetch(`https://geocoding-api.open-meteo.com/v1/search?name=&latitude=${loc.lat}&longitude=${loc.lon}&count=1&language=${L}`)
         .catch(()=>{});
       loadWeather(loc); go("score");
     },
-    ()=>toast("Localisation refusée"),
+    ()=>toast(tr("toast_loc_denied")),
     {enableHighAccuracy:false, timeout:8000, maximumAge:600000}
   );
 }
@@ -1267,7 +1450,7 @@ function bindUI(){
     state.saved=[]; state.sens={cold:0,rain:0,wind:0}; state.work={start:"09:00",end:"17:00",duration:20};
     $("#sCold").value=0; $("#sRain").value=0; $("#sWind").value=0;
     $("#workStart").value="09:00"; $("#workEnd").value="17:00"; $("#workDur").value=20; $("#workDurVal").textContent="20 min";
-    setTheme("auto"); renderSaved(); render(); toast("Réinitialisé");
+    setTheme("auto"); renderSaved(); render(); toast(tr("toast_reset"));
   };
   const sens=(id,key)=>{ const el=$(id); el.value=state.sens[key];
     el.addEventListener("input",()=>{ state.sens[key]=+el.value; store.set("sens",state.sens); render(); }); };
@@ -1337,7 +1520,7 @@ function obShow(){
   $$(".ob-step").forEach(s=>s.classList.toggle("active", +s.dataset.step===cur));
   $("#obDots").innerHTML=steps.map((_,k)=>`<i class="${k===OB.i?'on':''}"></i>`).join("");
   $("#obBack").hidden = OB.i===0;
-  $("#obNext").textContent = OB.i===steps.length-1 ? "Commencer" : "Suivant";
+  $("#obNext").textContent = OB.i===steps.length-1 ? tr("ob_start_btn") : tr("ob_next");
   $(".ob-body").scrollTop=0;
 }
 function obNext(){ const steps=obSteps(); if(OB.i>=steps.length-1){ obFinish(); } else { OB.i++; obShow(); } }
@@ -1362,18 +1545,19 @@ function bindOnboarding(){
   $$("[data-consent]").forEach(b=>b.onclick=()=>{ OB.consent=b.dataset.consent; $$("[data-consent]").forEach(x=>x.setAttribute("aria-pressed", x===b)); });
   const dur=$("#obDur"), dv=$("#obDurVal"); dur.addEventListener("input",()=>dv.textContent=(+dur.value)+" min");
   $("#obGeo").onclick=()=>{
-    if(!navigator.geolocation){ $("#obGeoStatus").textContent="Géolocalisation indisponible."; return; }
-    $("#obGeoStatus").textContent="Localisation…";
+    if(!navigator.geolocation){ $("#obGeoStatus").textContent=tr("obgeo_unavail"); return; }
+    $("#obGeoStatus").textContent=tr("obgeo_locating");
     navigator.geolocation.getCurrentPosition(
-      pos=>{ state.loc={name:"Ma position",sub:"",lat:pos.coords.latitude,lon:pos.coords.longitude}; store.set("loc",state.loc);
-             $("#obGeoStatus").textContent="Position enregistrée."; loadWeather(state.loc); setTimeout(obNext,300); },
-      ()=>{ $("#obGeoStatus").textContent="Localisation refusée — tu pourras chercher une ville dans Lieux."; }
+      pos=>{ state.loc={name:tr("my_position"),sub:"",lat:pos.coords.latitude,lon:pos.coords.longitude}; store.set("loc",state.loc);
+             $("#obGeoStatus").textContent=tr("obgeo_saved"); loadWeather(state.loc); setTimeout(obNext,300); },
+      ()=>{ $("#obGeoStatus").textContent=tr("obgeo_denied"); }
     );
   };
   $("#obLater").onclick=()=>obNext();
 }
 
 function boot(){
+  applyI18n();
   bindUI();
   bindOnboarding();
   setMode(state.mode);
