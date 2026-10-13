@@ -99,6 +99,25 @@ main{flex:1;padding:16px;display:flex;flex-direction:column;gap:16px}
 .commute{margin-top:13px;display:flex;align-items:center;gap:9px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:14px}
 .commute svg{width:18px;height:18px;color:var(--accent);flex:none}
 .commute .cl-score{color:var(--accent);font-weight:700}
+/* double jauge (jour / trajet) */
+.trip-switch{display:flex;align-self:center;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px;gap:3px;margin-bottom:16px}
+.trip-switch button{border:0;background:transparent;border-radius:999px;padding:6px 20px;font-weight:600;font-size:13px;color:var(--muted);transition:.15s}
+.trip-switch button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
+.gauges{display:flex;gap:16px;width:100%;justify-content:center;align-items:flex-start}
+.gwrap{flex:1;min-width:0;max-width:180px;display:flex;flex-direction:column;align-items:center}
+.gauges.solo .gwrap{max-width:none}
+.glabel{font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;text-align:center}
+.gauge-sm{width:132px;height:132px}
+.gauges.solo .gauge-sm{width:184px;height:184px}
+.gauge-sm svg{width:100%;height:100%}
+.gauge-sm .track,.gauge-sm .val{stroke-width:12}
+.gauge-sm .num{font-size:46px}
+.gauges.solo .gauge-sm .num{font-size:66px}
+.gverdict{margin-top:9px;font-family:var(--display);font-size:19px;font-weight:600;text-align:center}
+.gauges.solo .gverdict{font-size:24px}
+.gsub{font-size:12.5px;color:var(--muted);margin-top:2px;text-align:center;min-height:1.1em}
+.gsub b{color:var(--accent);font-weight:700}
+.alert.anticip{background:var(--warn-tint);color:var(--warn)}
 .timein{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:15px;color:var(--fg);font-family:inherit}
 .timein:focus{outline:2px solid var(--accent);outline-offset:1px}
 .durwrap{display:flex;align-items:center;gap:10px}
@@ -303,21 +322,33 @@ body.has-ad .app{padding-bottom:calc(72px + var(--ad-h) + env(safe-area-inset-bo
         <span data-i18n="sample">Données d'exemple — localise-toi ou cherche une ville pour la météo réelle.</span>
       </div>
       <div class="card hero">
-        <div class="hero-eyebrow" id="heroEyebrow">Aujourd'hui</div>
-        <div class="gauge">
-          <svg width="208" height="208" viewBox="0 0 208 208" aria-hidden="true">
-            <circle class="track" cx="104" cy="104" r="90"/>
-            <circle class="val" id="gaugeVal" cx="104" cy="104" r="90"/>
-          </svg>
-          <div class="center">
-            <div class="num" id="scoreNum">–</div>
-            <div class="outof">/ 100</div>
+        <div class="trip-switch" id="tripSwitch" role="group" aria-label="Trajet">
+          <button id="tsAller" data-dir="aller" aria-pressed="true" data-i18n="commute_to_short">Aller</button>
+          <button id="tsRetour" data-dir="retour" aria-pressed="false" data-i18n="commute_from_short">Retour</button>
+        </div>
+        <div class="gauges" id="gauges">
+          <div class="gwrap" id="gwrapDay">
+            <div class="glabel" id="labelDay" data-i18n="gauge_day">Score du jour</div>
+            <div class="gauge gauge-sm">
+              <svg viewBox="0 0 132 132" aria-hidden="true"><circle class="track" cx="66" cy="66" r="56"/><circle class="val" id="gaugeDay" cx="66" cy="66" r="56"/></svg>
+              <div class="center"><div class="num" id="scoreDay">–</div><div class="outof">/ 100</div></div>
+            </div>
+            <div class="gverdict" id="verdictDay">—</div>
+            <div class="gsub" id="subDay"></div>
+          </div>
+          <div class="gwrap" id="gwrapTrip">
+            <div class="glabel" id="labelTrip" data-i18n="gauge_trip">Score du trajet</div>
+            <div class="gauge gauge-sm">
+              <svg viewBox="0 0 132 132" aria-hidden="true"><circle class="track" cx="66" cy="66" r="56"/><circle class="val" id="gaugeTrip" cx="66" cy="66" r="56"/></svg>
+              <div class="center"><div class="num" id="scoreTrip">–</div><div class="outof">/ 100</div></div>
+            </div>
+            <div class="gverdict" id="verdictTrip">—</div>
+            <div class="gsub" id="subTrip"></div>
           </div>
         </div>
-        <div class="verdict" id="verdict">—</div>
         <div class="reason" id="reason" data-i18n="reason_default">On récupère les conditions…</div>
-        <div class="commute" id="commuteLine" hidden></div>
         <div class="alert" id="alertBox"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 2 20h20L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span id="alertText"></span></div>
+        <div class="alert anticip" id="anticipBox"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 2 20h20L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span id="anticipText"></span></div>
       </div>
 
       <div class="sec-h"><h2 data-i18n="gear_title">Matériel conseillé</h2><span class="hint" id="gearHint"></span></div>
@@ -571,6 +602,9 @@ const STR = {
     gear_none:"Tenue classique — rien de particulier à prévoir.",
     gear_hint_taff:"pour ton trajet", gear_hint_sport:"pour ta sortie",
     hero_taff:"Trajets d'aujourd'hui", hero_today:"Aujourd'hui",
+    gauge_day:"Score du jour", gauge_trip:"Score du trajet",
+    commute_to_short:"Aller", commute_from_short:"Retour",
+    trip_leave:"Partez vers", trip_anticip_aller:"Prévoyez pour l'aller", trip_anticip_retour:"Prévoyez pour le retour",
     commute_to:"Aller au travail", commute_from:"Retour du travail",
     commute_leave:"partez ", commute_around:"vers ",
     tomorrow:"demain ", afterTomorrow:"après-demain ", now_prefix:"maintenant · ",
@@ -652,6 +686,9 @@ const STR = {
     gear_none:"Normal outfit — nothing special needed.",
     gear_hint_taff:"for your commute", gear_hint_sport:"for your ride",
     hero_taff:"Today's commutes", hero_today:"Today",
+    gauge_day:"Day score", gauge_trip:"Trip score",
+    commute_to_short:"Outbound", commute_from_short:"Return",
+    trip_leave:"Leave around", trip_anticip_aller:"Pack for the way there", trip_anticip_retour:"Pack for the way back",
     commute_to:"Ride to work", commute_from:"Ride home",
     commute_leave:"leave ", commute_around:"around ",
     tomorrow:"tomorrow ", afterTomorrow:"in two days ", now_prefix:"now · ",
@@ -714,6 +751,7 @@ const state = {
   data: null,                           // forecast normalisé
   isSample: true,
   focus: null,                          // heure de référence (trajet en mode taff)
+  tripDir: null,                        // "aller" | "retour" (jauge trajet)
   tab: "score"
 };
 
@@ -1131,54 +1169,122 @@ function render(){
   renderSaved();
 }
 
+/* ---- trajet : direction par défaut, fenêtre, meilleur départ ---- */
+function defaultTripDir(){
+  const Hs=parseHM(state.work.start);
+  const nowH=hourFloat(state.data.hours[nowIndex()].date);
+  return nowH < Hs ? "aller" : "retour";
+}
+function tripWindow(dir){
+  const Hs=parseHM(state.work.start), He=parseHM(state.work.end), durH=workDuration()/60;
+  if(dir==="aller"){                 // partir à temps pour arriver avant Hs
+    let we=Hs-durH, ws=Hs-2;
+    if(we<ws) ws=we-1;               // trajets très longs (> 2 h)
+    return {ws, we};
+  }
+  return {ws:He, we:He+2};           // retour : fenêtre après la fin de journée
+}
+function tripBest(dir, dayDate){
+  const w=tripWindow(dir);
+  let best=bestInWindow(dayDate, w.ws, w.we, "taff", state.sens, workDuration());
+  if(best) return Object.assign({}, best, {day:dayDate, nextDay:false});
+  // créneau déjà passé aujourd'hui → on propose le même trajet demain
+  const tmr=new Date(dayDate.getTime()+86400000);
+  best=bestInWindow(tmr, w.ws, w.we, "taff", state.sens, workDuration());
+  if(best) return Object.assign({}, best, {day:tmr, nextDay:true});
+  // dernier repli : fenêtre élargie aujourd'hui
+  best=bestInWindow(dayDate, w.ws-1, w.we+1, "taff", state.sens, workDuration());
+  return best ? Object.assign({}, best, {day:dayDate, nextDay:false}) : null;
+}
+function paintGauge(valId, numId, score){
+  const b=band(score==null?0:score);
+  const C=2*Math.PI*56, el=$(valId);
+  el.style.stroke=b.color;
+  el.setAttribute("stroke-dasharray",C);
+  el.setAttribute("stroke-dashoffset", C*(1-(score==null?0:score)/100));
+  const num=$(numId);
+  num.textContent = score==null ? "–" : score;
+  num.style.color = score==null ? "var(--muted)" : b.color;
+  return b;
+}
+function setAlert(caps){
+  const a=$("#alertBox");
+  if(caps && caps.length){ a.classList.add("show"); $("#alertText").textContent=caps.join(" · "); }
+  else a.classList.remove("show");
+}
+// matériel « à emporter » qu'on anticipe pour l'autre trajet du jour
+const CARRY_GEAR = ["gear_rainjacket","gear_windbreaker","gear_gloves","gear_neck","gear_overshoes"];
+function renderAnticip(dayDate){
+  const box=$("#anticipBox");
+  const other = state.tripDir==="aller" ? "retour" : "aller";
+  const ob = tripBest(other, dayDate);
+  if(!ob){ box.classList.remove("show"); return; }
+  const nowKeys = new Set(GEAR.filter(g=>g.modes.includes("taff") && g.test(state.focus,state.sens)).map(g=>g.key));
+  const extra = GEAR.filter(g=> g.modes.includes("taff") && CARRY_GEAR.indexOf(g.key)>=0
+                && g.test(ob.h,state.sens) && !nowKeys.has(g.key));
+  if(!extra.length){ box.classList.remove("show"); return; }
+  const names = extra.map(g=>tr(g.key)).join(", ");
+  const label = other==="aller" ? tr("trip_anticip_aller") : tr("trip_anticip_retour");
+  $("#anticipText").textContent = `${label} : ${names}`;
+  box.classList.add("show");
+}
+
 function renderScore(){
   const nowH = state.data.hours[nowIndex()];
   const today = nowH.date;
 
-  // grand score = score représentatif du jour (identique à la ligne "aujourd'hui" du 7 jours)
-  let big = dayScore(today, state.mode, state.sens);
-  if(big==null) big = scoreHour(nowH, state.mode, state.sens).score;
+  // ---- jauge du jour (toujours) ----
+  let dayVal = dayScore(today, state.mode, state.sens);
+  if(dayVal==null) dayVal = scoreHour(nowH, state.mode, state.sens).score;
+  const bDay = paintGauge("#gaugeDay","#scoreDay",dayVal);
+  $("#verdictDay").textContent = bDay.word;
+  $("#nowLabel").textContent = tr("now_prefix") + nowH.date.toLocaleTimeString(LOCALE,{hour:"2-digit",minute:"2-digit"});
 
-  // heure de référence (raison, matériel, alerte) : le trajet à venir en mode taff, sinon maintenant
-  let focus = nowH, commute = null, best = null;
-  if(state.mode==="taff"){
-    commute = nextCommute();
-    best = bestInWindow(commute.dayDate, commute.winStart, commute.winEnd, state.mode, state.sens, workDuration());
-    if(best) focus = best.h;
+  // ---- sortie sportive : une seule jauge ----
+  if(state.mode!=="taff"){
+    $("#gauges").classList.add("solo");
+    $("#tripSwitch").hidden=true; $("#gwrapTrip").hidden=true;
+    $("#labelDay").textContent = tr("hero_today");
+    $("#subDay").textContent="";
+    state.focus = nowH;
+    const res=scoreHour(nowH,state.mode,state.sens);
+    $("#reason").textContent = res.caps.length ? cap1(res.caps[0])
+      : (res.score>=82 ? tr("reason_good") : cap1(dominant(res)));
+    setAlert(res.caps);
+    $("#anticipBox").classList.remove("show");
+    return;
   }
+
+  // ---- vélo taff : deux jauges + switch aller/retour ----
+  $("#gauges").classList.remove("solo");
+  $("#tripSwitch").hidden=false; $("#gwrapTrip").hidden=false;
+  $("#labelDay").textContent = tr("gauge_day");
+  $("#labelTrip").textContent = tr("gauge_trip");
+  $("#subDay").textContent="";
+
+  if(state.tripDir==null) state.tripDir = defaultTripDir();
+  $("#tsAller").setAttribute("aria-pressed", state.tripDir==="aller");
+  $("#tsRetour").setAttribute("aria-pressed", state.tripDir==="retour");
+
+  const best = tripBest(state.tripDir, today);
+  const tripVal = best ? best.score : null;
+  const bTrip = paintGauge("#gaugeTrip","#scoreTrip",tripVal);
+  $("#verdictTrip").textContent = tripVal==null ? "—" : bTrip.word;
+
+  const focus = best ? best.h : nowH;
   state.focus = focus;
 
-  const b = band(big);
-  const C = 2*Math.PI*90, el = $("#gaugeVal");
-  el.style.stroke = b.color;
-  el.setAttribute("stroke-dasharray", C);
-  el.setAttribute("stroke-dashoffset", C*(1 - big/100));
-  $("#scoreNum").textContent = big;
-  $("#scoreNum").style.color = b.color;
-  $("#verdict").textContent = b.word;
-  $("#heroEyebrow").textContent = state.mode==="taff" ? tr("hero_taff") : tr("hero_today");
+  if(best){
+    const t=best.h.date.toLocaleTimeString(LOCALE,{hour:"2-digit",minute:"2-digit"});
+    const when=best.nextDay ? tr("tomorrow") : "";
+    $("#subTrip").innerHTML = `${tr("trip_leave")} ${when}<b>${t}</b>`;
+  } else $("#subTrip").textContent = "";
 
-  const res = scoreHour(focus, state.mode, state.sens);
+  const res=scoreHour(focus,state.mode,state.sens);
   $("#reason").textContent = res.caps.length ? cap1(res.caps[0])
     : (res.score>=82 ? tr("reason_good") : cap1(dominant(res)));
-
-  const a = $("#alertBox");
-  if(res.caps.length){ a.classList.add("show"); $("#alertText").textContent = res.caps.join(" · "); }
-  else a.classList.remove("show");
-
-  // ligne trajet : meilleure heure pour partir (aller / retour)
-  const cl = $("#commuteLine");
-  if(state.mode==="taff" && commute && best){
-    const t = best.h.date.toLocaleTimeString(LOCALE,{hour:"2-digit",minute:"2-digit"});
-    const when = commute.dayDate.toDateString()===today.toDateString() ? "" : tr("tomorrow");
-    const label = commute.dir==="aller" ? tr("commute_to") : tr("commute_from");
-    cl.innerHTML =
-      `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`+
-      `<span><b>${label}</b> · ${tr("commute_leave")}${when}${tr("commute_around")}<b>${t}</b> <span class="cl-score">${best.score}</span></span>`;
-    cl.hidden = false;
-  } else { cl.hidden = true; }
-
-  $("#nowLabel").textContent = tr("now_prefix") + nowH.date.toLocaleTimeString(LOCALE,{hour:"2-digit",minute:"2-digit"});
+  setAlert(res.caps);
+  renderAnticip(today);
 }
 
 function renderGear(){
@@ -1441,6 +1547,8 @@ function geolocate(){
 function bindUI(){
   $("#mTaff").onclick=()=>setMode("taff");
   $("#mSport").onclick=()=>setMode("sport");
+  $("#tsAller").onclick=()=>{ state.tripDir="aller"; render(); };
+  $("#tsRetour").onclick=()=>{ state.tripDir="retour"; render(); };
   $("#r24").onclick=()=>setRange(24);
   $("#r48").onclick=()=>setRange(48);
   $("#btnRefresh").onclick=()=>{ if(state.loc) loadWeather(state.loc); else go("places"); };
