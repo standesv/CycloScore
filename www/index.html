@@ -1099,6 +1099,13 @@ function parseHM(s){ const m=/^(\d{1,2}):(\d{2})$/.exec(s||""); return m ? (+m[1
 
 function workDuration(){ return (state.work && state.work.duration) || 20; }
 
+// l'arrivée (début) doit précéder le départ (fin) : si c'est inversé, on remet dans l'ordre
+function normalizeWork(w){
+  if(!w) return {start:"09:00", end:"17:00", duration:20};
+  if(parseHM(w.start) > parseHM(w.end)) return {start:w.end, end:w.start, duration:w.duration};
+  return w;
+}
+
 // score d'un TRAJET : moyenne pondérée des heures couvertes entre le départ et l'arrivée
 // (un trajet qui finit après le coucher du soleil est pénalisé par les heures de nuit).
 function rideScore(depDate, durMin, mode, sens){
@@ -1127,22 +1134,15 @@ function bestInWindow(dayDate, winStart, winEnd, mode, sens, durMin){
   return best;
 }
 
-// score représentatif d'un jour — identique au grand score du haut pour aujourd'hui
+// score représentatif d'un jour = conditions cyclables sur TOUTE la journée (les deux modes).
+// Distinct du score du trajet, qui ne regarde que le créneau de l'aller/retour.
 function dayScore(dayDate, mode, sens){
-  if(mode==="taff"){
-    const Hs=parseHM(state.work.start), He=parseHM(state.work.end), dur=workDuration();
-    const m=bestInWindow(dayDate, Hs-2, Hs, mode, sens, dur);   // aller
-    const e=bestInWindow(dayDate, He,   He+2, mode, sens, dur); // retour
-    const parts=[m,e].filter(Boolean).map(x=>x.score);
-    if(!parts.length) return null;
-    return Math.round(parts.reduce((a,b)=>a+b,0)/parts.length);
-  }
   const hrs=state.data.hours.filter(h=> h.date.toDateString()===dayDate.toDateString() && h.isDay);
   if(!hrs.length) return null;
   const arr=hrs.map(h=>scoreHour(h,mode,sens).score).sort((a,b)=>a-b);
   const mean=arr.reduce((s,x)=>s+x,0)/arr.length;
   const k=Math.max(1,Math.ceil(arr.length/3));
-  const worst=arr.slice(0,k).reduce((s,x)=>s+x,0)/k;
+  const worst=arr.slice(0,k).reduce((s,x)=>s+x,0)/k;   // on pénalise les mauvaises heures
   return Math.round(0.45*mean + 0.55*worst);
 }
 
@@ -1176,7 +1176,8 @@ function defaultTripDir(){
   return nowH < Hs ? "aller" : "retour";
 }
 function tripWindow(dir){
-  const Hs=parseHM(state.work.start), He=parseHM(state.work.end), durH=workDuration()/60;
+  let Hs=parseHM(state.work.start), He=parseHM(state.work.end); const durH=workDuration()/60;
+  if(Hs>He){ const t=Hs; Hs=He; He=t; }   // garde-fou : horaires inversés
   if(dir==="aller"){                 // partir à temps pour arriver avant Hs
     let we=Hs-durH, ws=Hs-2;
     if(we<ws) ws=we-1;               // trajets très longs (> 2 h)
@@ -1381,7 +1382,7 @@ function renderHourly(){
 
 function renderDaily(){
   const box=$("#daily"); box.innerHTML="";
-  const dh=$("#dailyHint"); if(dh) dh.textContent = state.mode==="taff" ? tr("daily_hint_taff") : tr("daily_hint_sport");
+  const dh=$("#dailyHint"); if(dh) dh.textContent = tr("daily_hint_sport");
   state.data.days.slice(0,7).forEach((d)=>{
     // même calcul que le grand score du haut (trajets en taff, journée en sportif)
     const avg = dayScore(d.date, state.mode, state.sens);
@@ -1572,7 +1573,8 @@ function bindUI(){
   ws.value=state.work.start||"09:00"; we.value=state.work.end||"17:00"; wd.value=workDuration();
   wdv.textContent = workDuration()+" min";
   const saveWork=()=>{
-    state.work={start:ws.value||"09:00", end:we.value||"17:00", duration:+wd.value||20};
+    state.work=normalizeWork({start:ws.value||"09:00", end:we.value||"17:00", duration:+wd.value||20});
+    ws.value=state.work.start; we.value=state.work.end;   // reflète l'ordre corrigé
     wdv.textContent = (+wd.value||20)+" min";
     store.set("work",state.work); render();
   };
@@ -1646,7 +1648,7 @@ function obNext(){ const steps=obSteps(); if(OB.i>=steps.length-1){ obFinish(); 
 function obBack(){ if(OB.i>0){ OB.i--; obShow(); } }
 function obFinish(){
   state.mode = OB.usage==="sport" ? "sport" : "taff";
-  state.work = {start:$("#obStart").value||"09:00", end:$("#obEnd").value||"17:00", duration:+$("#obDur").value||20};
+  state.work = normalizeWork({start:$("#obStart").value||"09:00", end:$("#obEnd").value||"17:00", duration:+$("#obDur").value||20});
   state.sens = {cold:+$("#obCold").value||0, rain:+$("#obRain").value||0, wind:+$("#obWind").value||0};
   state.adConsent = OB.consent;
   state.onboarded = true;
@@ -1678,6 +1680,7 @@ function bindOnboarding(){
 
 function boot(){
   applyI18n();
+  state.work = normalizeWork(state.work);   // corrige d'anciens horaires inversés
   bindUI();
   bindOnboarding();
   setMode(state.mode);
