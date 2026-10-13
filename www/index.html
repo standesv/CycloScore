@@ -118,6 +118,18 @@ main{flex:1;padding:16px;display:flex;flex-direction:column;gap:16px}
 .gsub{font-size:12.5px;color:var(--muted);margin-top:2px;text-align:center;min-height:1.1em}
 .gsub b{color:var(--accent);font-weight:700}
 .alert.anticip{background:var(--warn-tint);color:var(--warn)}
+/* créneaux de départ (au plus tôt / meilleur) */
+.trip-opts{display:flex;flex-direction:column;gap:8px;width:100%;margin-top:2px}
+.trip-opt-row{display:flex;gap:8px;justify-content:center}
+.topt{flex:1;max-width:210px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 13px;color:var(--fg)}
+.topt[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+.topt .tl{display:flex;flex-direction:column;align-items:flex-start;line-height:1.1;min-width:0}
+.topt .tl .tt{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.topt .tl .th{font-size:15px;font-weight:700;white-space:nowrap}
+.topt .ts{font-family:var(--display);font-size:21px;font-weight:700;flex:none}
+.trip-expl{font-size:12.5px;color:var(--muted);text-align:center;max-width:36ch;margin:0 auto}
+.trip-expl b{color:var(--accent);font-weight:700}
 .timein{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:15px;color:var(--fg);font-family:inherit}
 .timein:focus{outline:2px solid var(--accent);outline-offset:1px}
 .durwrap{display:flex;align-items:center;gap:10px}
@@ -343,9 +355,9 @@ body.has-ad .app{padding-bottom:calc(72px + var(--ad-h) + env(safe-area-inset-bo
               <div class="center"><div class="num" id="scoreTrip">–</div><div class="outof">/ 100</div></div>
             </div>
             <div class="gverdict" id="verdictTrip">—</div>
-            <div class="gsub" id="subTrip"></div>
           </div>
         </div>
+        <div class="trip-opts" id="tripOpts"></div>
         <div class="reason" id="reason" data-i18n="reason_default">On récupère les conditions…</div>
         <div class="alert" id="alertBox"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 2 20h20L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span id="alertText"></span></div>
         <div class="alert anticip" id="anticipBox"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 2 20h20L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span id="anticipText"></span></div>
@@ -605,6 +617,7 @@ const STR = {
     gauge_day:"Score du jour", gauge_trip:"Score du trajet",
     commute_to_short:"Aller", commute_from_short:"Retour",
     trip_leave:"Partez vers", trip_anticip_aller:"Prévoyez pour l'aller", trip_anticip_retour:"Prévoyez pour le retour",
+    opt_earliest:"Au plus tôt", opt_best:"Meilleur", opts_earlier_note:"Plus tôt", opts_anytime:"conditions stables sur la fenêtre",
     commute_to:"Aller au travail", commute_from:"Retour du travail",
     commute_leave:"partez ", commute_around:"vers ",
     tomorrow:"demain ", afterTomorrow:"après-demain ", now_prefix:"maintenant · ",
@@ -689,6 +702,7 @@ const STR = {
     gauge_day:"Day score", gauge_trip:"Trip score",
     commute_to_short:"Outbound", commute_from_short:"Return",
     trip_leave:"Leave around", trip_anticip_aller:"Pack for the way there", trip_anticip_retour:"Pack for the way back",
+    opt_earliest:"Earliest", opt_best:"Best", opts_earlier_note:"Earlier", opts_anytime:"stable conditions across the window",
     commute_to:"Ride to work", commute_from:"Ride home",
     commute_leave:"leave ", commute_around:"around ",
     tomorrow:"tomorrow ", afterTomorrow:"in two days ", now_prefix:"now · ",
@@ -752,6 +766,7 @@ const state = {
   isSample: true,
   focus: null,                          // heure de référence (trajet en mode taff)
   tripDir: null,                        // "aller" | "retour" (jauge trajet)
+  tripSlot: "best",                     // "best" | "early" (créneau de départ choisi)
   tab: "score"
 };
 
@@ -1197,6 +1212,47 @@ function tripBest(dir, dayDate){
   best=bestInWindow(dayDate, w.ws-1, w.we+1, "taff", state.sens, workDuration());
   return best ? Object.assign({}, best, {day:dayDate, nextDay:false}) : null;
 }
+// deux créneaux d'un trajet : le plus tôt (dès l'ouverture de la fenêtre) et le meilleur
+function tripOptions(dir, dayDate){
+  const w=tripWindow(dir), dur=workDuration();
+  const pick=(day, ws, we)=>{
+    const cand=state.data.hours.filter(h=>h.date.toDateString()===day.toDateString()
+      && hourFloat(h.date)>=ws-0.01 && hourFloat(h.date)<=we+0.01);
+    if(!cand.length) return null;
+    cand.sort((a,b)=>a.date-b.date);
+    let best=null;
+    cand.forEach(h=>{ const s=rideScore(h.date,dur,"taff",state.sens); if(s!=null && (!best || s>best.score)) best={h,score:s}; });
+    const e=cand[0], es=rideScore(e.date,dur,"taff",state.sens);
+    return best ? {early:{h:e,score:es}, best} : null;
+  };
+  let r=pick(dayDate, w.ws, w.we), nextDay=false;
+  if(!r){ const tmr=new Date(dayDate.getTime()+86400000); r=pick(tmr, w.ws, w.we); if(r) nextDay=true; }
+  if(!r) r=pick(dayDate, w.ws-1, w.we+1);
+  return r ? {early:r.early, best:r.best, nextDay} : null;
+}
+function renderTripOpts(opts){
+  const box=$("#tripOpts");
+  if(!opts || !opts.early){ box.innerHTML=""; return; }
+  const when = opts.nextDay ? tr("tomorrow") : "";
+  const fmt = o => o.h.date.toLocaleTimeString(LOCALE,{hour:"2-digit",minute:"2-digit"});
+  const same = opts.early.h===opts.best.h || opts.early.score===opts.best.score;
+  if(same){
+    box.innerHTML = `<div class="trip-expl">${tr("trip_leave")} ${when}<b>${fmt(opts.best)}</b> — ${tr("opts_anytime")}</div>`;
+    return;
+  }
+  const mk=(key,label,o)=>{
+    const b=band(o.score);
+    return `<button class="topt" data-slot="${key}" aria-pressed="${state.tripSlot===key}">`+
+      `<span class="tl"><span class="tt">${label}</span><span class="th">${when}${fmt(o)}</span></span>`+
+      `<span class="ts" style="color:${b.color}">${o.score}</span></button>`;
+  };
+  const worse=scoreHour(opts.early.h,"taff",state.sens);
+  const raison=(worse.caps.length ? worse.caps[0] : dominant(worse)).toLowerCase();
+  box.innerHTML =
+    `<div class="trip-opt-row">${mk("early",tr("opt_earliest"),opts.early)}${mk("best",tr("opt_best"),opts.best)}</div>`+
+    `<div class="trip-expl">${tr("opts_earlier_note")} (${fmt(opts.early)}) : ${raison}</div>`;
+  box.querySelectorAll(".topt").forEach(bn=>bn.onclick=()=>{ state.tripSlot=bn.dataset.slot; render(); });
+}
 function paintGauge(valId, numId, score){
   const b=band(score==null?0:score);
   const C=2*Math.PI*56, el=$(valId);
@@ -1267,21 +1323,16 @@ function renderScore(){
   $("#tsAller").setAttribute("aria-pressed", state.tripDir==="aller");
   $("#tsRetour").setAttribute("aria-pressed", state.tripDir==="retour");
 
-  const best = tripBest(state.tripDir, today);
-  const tripVal = best ? best.score : null;
+  const opts = tripOptions(state.tripDir, today);
+  const sel = opts ? (state.tripSlot==="early" ? opts.early : opts.best) : null;
+  const tripVal = sel ? sel.score : null;
   const bTrip = paintGauge("#gaugeTrip","#scoreTrip",tripVal);
   $("#verdictTrip").textContent = tripVal==null ? "—" : bTrip.word;
 
-  const focus = best ? best.h : nowH;
-  state.focus = focus;
+  state.focus = sel ? sel.h : nowH;
+  renderTripOpts(opts);
 
-  if(best){
-    const t=best.h.date.toLocaleTimeString(LOCALE,{hour:"2-digit",minute:"2-digit"});
-    const when=best.nextDay ? tr("tomorrow") : "";
-    $("#subTrip").innerHTML = `${tr("trip_leave")} ${when}<b>${t}</b>`;
-  } else $("#subTrip").textContent = "";
-
-  const res=scoreHour(focus,state.mode,state.sens);
+  const res=scoreHour(state.focus,state.mode,state.sens);
   $("#reason").textContent = res.caps.length ? cap1(res.caps[0])
     : (res.score>=82 ? tr("reason_good") : cap1(dominant(res)));
   setAlert(res.caps);
