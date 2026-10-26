@@ -219,6 +219,10 @@ main{flex:1;padding:16px;display:flex;flex-direction:column;gap:16px}
 .set-row .s-l .d{font-size:12.5px;color:var(--muted)}
 .slider{width:150px;flex:none}
 input[type=range]{width:100%;accent-color:var(--accent)}
+/* curseur avec libellés aux extrémités */
+.sliderL{width:160px;flex:none;display:flex;flex-direction:column;gap:3px}
+.sliderL .ends{display:flex;justify-content:space-between;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.02em}
+.set-row .s-l .d b{color:var(--accent);font-weight:700}
 .seg{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .seg button{border:0;background:transparent;padding:8px 12px;font-weight:600;font-size:13px;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
@@ -280,6 +284,9 @@ body.has-ad .app{padding-bottom:calc(72px + var(--ad-h) + env(safe-area-inset-bo
 .ob-row+.ob-row{border-top:1px solid var(--line)}
 .ob-row .t{font-weight:600}.ob-row .d{font-size:12.5px;color:var(--muted)}
 .ob-slider{width:150px}
+.ob-sliderL{width:160px;display:flex;flex-direction:column;gap:3px}
+.ob-sliderL input{width:100%}
+.ob-sliderL .ends{display:flex;justify-content:space-between;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.02em}
 .ob-nav{display:flex;gap:10px;margin-top:16px}
 .ob-nav .btn{flex:1;padding:14px}
 .ob-legal{font-size:12px;color:var(--muted);line-height:1.5}
@@ -423,16 +430,16 @@ body.has-ad .app{padding-bottom:calc(72px + var(--ad-h) + env(safe-area-inset-bo
       <div class="sec-h" style="margin-top:4px"><h2 data-i18n="settings">Réglages</h2></div>
       <div class="card set">
         <div class="set-row">
-          <div class="s-l"><div class="t" data-i18n="cold_sens">Sensibilité au froid</div><div class="d" data-i18n="cold_sens_d">« frileux » relève le seuil de confort</div></div>
-          <div class="slider"><input type="range" id="sCold" min="-6" max="6" value="0"></div>
+          <div class="s-l"><div class="t" data-i18n="cold_sens">Sensibilité au froid</div><div class="d" id="sColdState"></div></div>
+          <div class="sliderL"><input type="range" id="sCold" min="-6" max="6" value="0"><div class="ends"><span data-i18n="cold_end_lo">Pas frileux</span><span data-i18n="cold_end_hi">Frileux</span></div></div>
         </div>
         <div class="set-row">
-          <div class="s-l"><div class="t" data-i18n="rain_tol">Tolérance à la pluie</div><div class="d" data-i18n="strict_left">à gauche = plus strict</div></div>
-          <div class="slider"><input type="range" id="sRain" min="-5" max="5" value="0"></div>
+          <div class="s-l"><div class="t" data-i18n="rain_tol">Tolérance à la pluie</div><div class="d" id="sRainState"></div></div>
+          <div class="sliderL"><input type="range" id="sRain" min="-5" max="5" value="0"><div class="ends"><span data-i18n="tol_end_lo">Strict</span><span data-i18n="tol_end_hi">Tolérant</span></div></div>
         </div>
         <div class="set-row">
-          <div class="s-l"><div class="t" data-i18n="wind_tol">Tolérance au vent</div><div class="d" data-i18n="strict_left">à gauche = plus strict</div></div>
-          <div class="slider"><input type="range" id="sWind" min="-5" max="5" value="0"></div>
+          <div class="s-l"><div class="t" data-i18n="wind_tol">Tolérance au vent</div><div class="d" id="sWindState"></div></div>
+          <div class="sliderL"><input type="range" id="sWind" min="-5" max="5" value="0"><div class="ends"><span data-i18n="tol_end_lo">Strict</span><span data-i18n="tol_end_hi">Tolérant</span></div></div>
         </div>
       </div>
       <div class="sec-h" style="margin-top:4px"><h2 data-i18n="display">Affichage</h2></div>
@@ -516,9 +523,9 @@ body.has-ad .app{padding-bottom:calc(72px + var(--ad-h) + env(safe-area-inset-bo
     <div class="ob-step" data-step="3">
       <h1 data-i18n="ob3_h1">Ta sensibilité</h1>
       <p class="sub" data-i18n="ob3_sub">Ça ajuste le score et le matériel conseillé à ton confort.</p>
-      <div class="ob-row"><div><div class="t" data-i18n="ob3_cold">Au froid</div><div class="d" data-i18n="ob3_cold_d">à droite = frileux</div></div><input class="ob-slider" type="range" id="obCold" min="-6" max="6" value="0"></div>
-      <div class="ob-row"><div><div class="t" data-i18n="ob3_rain">À la pluie</div><div class="d" data-i18n="ob3_rain_d">à gauche = plus strict</div></div><input class="ob-slider" type="range" id="obRain" min="-5" max="5" value="0"></div>
-      <div class="ob-row"><div><div class="t" data-i18n="ob3_wind">Au vent</div><div class="d" data-i18n="ob3_wind_d">à gauche = plus strict</div></div><input class="ob-slider" type="range" id="obWind" min="-5" max="5" value="0"></div>
+      <div class="ob-row"><div><div class="t" data-i18n="ob3_cold">Au froid</div></div><div class="ob-sliderL"><input type="range" id="obCold" min="-6" max="6" value="0"><div class="ends"><span data-i18n="cold_end_lo">Pas frileux</span><span data-i18n="cold_end_hi">Frileux</span></div></div></div>
+      <div class="ob-row"><div><div class="t" data-i18n="ob3_rain">À la pluie</div></div><div class="ob-sliderL"><input type="range" id="obRain" min="-5" max="5" value="0"><div class="ends"><span data-i18n="tol_end_lo">Strict</span><span data-i18n="tol_end_hi">Tolérant</span></div></div></div>
+      <div class="ob-row"><div><div class="t" data-i18n="ob3_wind">Au vent</div></div><div class="ob-sliderL"><input type="range" id="obWind" min="-5" max="5" value="0"><div class="ends"><span data-i18n="tol_end_lo">Strict</span><span data-i18n="tol_end_hi">Tolérant</span></div></div></div>
     </div>
 
     <div class="ob-step" data-step="4">
@@ -580,6 +587,9 @@ const STR = {
     settings:"Réglages",
     cold_sens:"Sensibilité au froid", cold_sens_d:"« frileux » relève le seuil de confort",
     rain_tol:"Tolérance à la pluie", strict_left:"à gauche = plus strict", wind_tol:"Tolérance au vent",
+    cold_end_lo:"Pas frileux", cold_end_hi:"Frileux", tol_end_lo:"Strict", tol_end_hi:"Tolérant",
+    st_cold_lo:"Résiste au froid", st_cold_mid:"Confort normal", st_cold_hi:"Frileux",
+    st_tol_lo:"Plutôt strict", st_tol_mid:"Tolérance moyenne", st_tol_hi:"Plutôt tolérant",
     display:"Affichage", theme:"Thème", theme_d:"clair, sombre ou auto",
     light:"Clair", auto:"Auto", dark:"Sombre",
     ads:"Publicité", ads_d:"personnalisée ou non", perso_short:"Perso.", nonperso_short:"Non perso.",
@@ -665,6 +675,9 @@ const STR = {
     settings:"Settings",
     cold_sens:"Cold sensitivity", cold_sens_d:"'chilly' raises the comfort threshold",
     rain_tol:"Rain tolerance", strict_left:"left = stricter", wind_tol:"Wind tolerance",
+    cold_end_lo:"Not chilly", cold_end_hi:"Chilly", tol_end_lo:"Strict", tol_end_hi:"Tolerant",
+    st_cold_lo:"Handles cold", st_cold_mid:"Normal comfort", st_cold_hi:"Gets cold easily",
+    st_tol_lo:"Rather strict", st_tol_mid:"Medium tolerance", st_tol_hi:"Rather tolerant",
     display:"Display", theme:"Theme", theme_d:"light, dark or auto",
     light:"Light", auto:"Auto", dark:"Dark",
     ads:"Ads", ads_d:"personalized or not", perso_short:"Pers.", nonperso_short:"Non-pers.",
@@ -1273,16 +1286,17 @@ function setAlert(caps){
 const CARRY_GEAR = ["gear_rainjacket","gear_windbreaker","gear_gloves","gear_neck","gear_overshoes"];
 function renderAnticip(dayDate){
   const box=$("#anticipBox");
-  const other = state.tripDir==="aller" ? "retour" : "aller";
-  const ob = tripBest(other, dayDate);
+  // anticipation uniquement prospective : on prévient pour le RETOUR quand on regarde l'ALLER.
+  // (sur le retour, l'aller est déjà passé → aucun message.)
+  if(state.tripDir!=="aller"){ box.classList.remove("show"); return; }
+  const ob = tripBest("retour", dayDate);
   if(!ob){ box.classList.remove("show"); return; }
   const nowKeys = new Set(GEAR.filter(g=>g.modes.includes("taff") && g.test(state.focus,state.sens)).map(g=>g.key));
   const extra = GEAR.filter(g=> g.modes.includes("taff") && CARRY_GEAR.indexOf(g.key)>=0
                 && g.test(ob.h,state.sens) && !nowKeys.has(g.key));
   if(!extra.length){ box.classList.remove("show"); return; }
   const names = extra.map(g=>tr(g.key)).join(", ");
-  const label = other==="aller" ? tr("trip_anticip_aller") : tr("trip_anticip_retour");
-  $("#anticipText").textContent = `${label} : ${names}`;
+  $("#anticipText").textContent = `${tr("trip_anticip_retour")} : ${names}`;
   box.classList.add("show");
 }
 
@@ -1612,13 +1626,14 @@ function bindUI(){
   $("#btnReset").onclick=()=>{
     try{ Object.keys(localStorage).filter(k=>k.startsWith("cyclo:")).forEach(k=>localStorage.removeItem(k)); }catch(e){}
     state.saved=[]; state.sens={cold:0,rain:0,wind:0}; state.work={start:"09:00",end:"17:00",duration:20};
-    $("#sCold").value=0; $("#sRain").value=0; $("#sWind").value=0;
+    $("#sCold").value=0; $("#sRain").value=0; $("#sWind").value=0; updateSensState();
     $("#workStart").value="09:00"; $("#workEnd").value="17:00"; $("#workDur").value=20; $("#workDurVal").textContent="20 min";
     setTheme("auto"); renderSaved(); render(); toast(tr("toast_reset"));
   };
   const sens=(id,key)=>{ const el=$(id); el.value=state.sens[key];
-    el.addEventListener("input",()=>{ state.sens[key]=+el.value; store.set("sens",state.sens); render(); }); };
+    el.addEventListener("input",()=>{ state.sens[key]=+el.value; store.set("sens",state.sens); updateSensState(); render(); }); };
   sens("#sCold","cold"); sens("#sRain","rain"); sens("#sWind","wind");
+  updateSensState();
   // horaires de travail + temps de trajet
   const ws=$("#workStart"), we=$("#workEnd"), wd=$("#workDur"), wdv=$("#workDurVal");
   ws.value=state.work.start||"09:00"; we.value=state.work.end||"17:00"; wd.value=workDuration();
@@ -1637,11 +1652,21 @@ function bindUI(){
   syncAdSeg();
 }
 function syncAdSeg(){ $$("[data-ad-opt]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.adOpt===state.adConsent)); }
+function sensState(kind, v){
+  if(kind==="cold") return v<=-3 ? tr("st_cold_lo") : v>=3 ? tr("st_cold_hi") : tr("st_cold_mid");
+  return v<=-2 ? tr("st_tol_lo") : v>=2 ? tr("st_tol_hi") : tr("st_tol_mid");
+}
+function updateSensState(){
+  const c=$("#sColdState"), r=$("#sRainState"), w=$("#sWindState");
+  if(c) c.innerHTML = "<b>"+sensState("cold",state.sens.cold)+"</b>";
+  if(r) r.innerHTML = "<b>"+sensState("tol",state.sens.rain)+"</b>";
+  if(w) w.innerHTML = "<b>"+sensState("tol",state.sens.wind)+"</b>";
+}
 function syncSettingsInputs(){
   $("#sCold").value=state.sens.cold; $("#sRain").value=state.sens.rain; $("#sWind").value=state.sens.wind;
   $("#workStart").value=state.work.start; $("#workEnd").value=state.work.end;
   $("#workDur").value=workDuration(); $("#workDurVal").textContent=workDuration()+" min";
-  syncAdSeg();
+  updateSensState(); syncAdSeg();
 }
 
 /* ============================================================
