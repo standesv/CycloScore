@@ -621,7 +621,7 @@ const STR = {
     ob_back:"Retour", ob_next:"Suivant", ob_start_btn:"Commencer",
     band_good:"Favorable", band_warn:"Mitigé", band_bad:"Déconseillé",
     cap_ice:"Risque de verglas", cap_storm:"Orage annoncé", cap_gust:"Rafales violentes",
-    dom_good:"conditions globalement bonnes", reason_good:"Conditions globalement bonnes",
+    dom_good:"conditions globalement bonnes", reason_good:"Conditions globalement bonnes", damp_note:"Bruine possible — route humide",
     gear_none:"Tenue classique — rien de particulier à prévoir.",
     gear_hint_taff:"pour ton trajet", gear_hint_sport:"pour ta sortie",
     hero_taff:"Trajets d'aujourd'hui", hero_today:"Aujourd'hui",
@@ -715,7 +715,7 @@ const STR = {
     ob_back:"Back", ob_next:"Next", ob_start_btn:"Start",
     band_good:"Good", band_warn:"Mixed", band_bad:"Not advised",
     cap_ice:"Ice risk", cap_storm:"Storm expected", cap_gust:"Violent gusts",
-    dom_good:"overall good conditions", reason_good:"Overall good conditions",
+    dom_good:"overall good conditions", reason_good:"Overall good conditions", damp_note:"Possible drizzle — wet roads",
     gear_none:"Normal outfit — nothing special needed.",
     gear_hint_taff:"for your commute", gear_hint_sport:"for your ride",
     hero_taff:"Today's commutes", hero_today:"Today",
@@ -873,8 +873,12 @@ function scoreHour(h, mode, sens){
   else if(h.rain >= 1.5) cap = Math.min(cap, 48);
   else if(h.rain >= 0.4 || (h.prob >= 65 && h.rain >= 0.1)) cap = Math.min(cap, 60);
 
+  // air saturé : bruine probable / route humide → plafond modéré (pas comme une vraie pluie)
+  const damp = isDamp(h, sens);
+  if(damp) cap = Math.min(cap, 72);
+
   const score = Math.round(clamp(Math.min(base, cap), 0, 100));
-  return {score, sub:s, caps, cair:cAir, capped: cap<100};
+  return {score, sub:s, caps, cair:cAir, capped: cap<100, damp};
 }
 
 /* ---- bande de couleur + verdict ---- */
@@ -948,10 +952,27 @@ function aqiLabel(a){
 /* Les seuils bougent avec les réglages de sensibilité (frilosité / pluie / vent) :
    plus on est frileux ou strict, plus le matériel est conseillé tôt. */
 const S = s => s || {cold:0, rain:0, wind:0};
+// air saturé → bruine probable / route humide, même quand la pluie annoncée est à 0.
+// Sensibilité pilotée par la Tolérance à la pluie : strict (gauche) = prévient plus tôt, tolérant (droite) = seulement si vraiment saturé.
+const dewSpread = h => (typeof h.dew==="number") ? (h.temp - h.dew) : null;
+const isDamp = (h,s)=>{ s=S(s);
+  if(h.rain >= 0.2) return false;                 // pluie déjà mesurée → gérée ailleurs
+  const rhThresh = 95 + s.rain;                   // strict (rain<0) → seuil plus bas = déclenche plus tôt
+  const spThresh = 1.5 - s.rain*0.15;             // écart au point de rosée toléré
+  const sp = dewSpread(h);
+  const saturated = (h.hum >= rhThresh) || (sp!=null && sp <= spThresh);
+  if(!saturated) return false;
+  // il faut un contexte « bas/humide » pour éviter une fausse alerte par nuit claire et humide
+  const support = (typeof h.cloud==="number" && h.cloud >= 60)
+      || (h.vis!=null && h.vis < 6000)
+      || h.code===3 || h.code===45 || h.code===48 || (h.code>=51 && h.code<=57);
+  return support;
+};
 const isRainy = (h,s)=>{ s=S(s);
   return h.rain >= Math.max(0.05, 0.2 + s.rain*0.03)
       || h.prob >= (55 + s.rain*4)
-      || (h.code>=51 && h.code<=82); };
+      || (h.code>=51 && h.code<=82)
+      || isDamp(h,s); };   // bruine / route humide → matériel pluie conseillé aussi
 const isWindy = (h,s)=>{ s=S(s); return Math.max(h.wind, h.gust*0.8) >= (22 + s.wind*1.5); };
 const isCold  = (h,s)=> h.feels <= (8 + S(s).cold);
 const isVCold = (h,s)=> h.feels <= (4 + S(s).cold);
@@ -993,6 +1014,8 @@ function normalize(json){
     vis: H.visibility?.[i] ?? 20000,
     uv: H.uv_index?.[i] ?? 0,
     hum: H.relative_humidity_2m?.[i] ?? 60,
+    dew: H.dew_point_2m?.[i],
+    cloud: H.cloud_cover?.[i],
     code: H.weather_code?.[i] ?? 0,
     isDay: (H.is_day?.[i] ?? 1) === 1,
     aqi: H.european_aqi?.[i]
@@ -1083,7 +1106,7 @@ function sampleData(){
   return {hourly:H, daily:D, timezone:"local"};
 }
 
-const FC_HOURLY = "temperature_2m,apparent_temperature,precipitation,precipitation_probability,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,visibility,uv_index,relative_humidity_2m,is_day";
+const FC_HOURLY = "temperature_2m,apparent_temperature,precipitation,precipitation_probability,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,visibility,uv_index,relative_humidity_2m,dew_point_2m,cloud_cover,is_day";
 const FC_DAILY = "weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset";
 
 async function loadWeather(loc){
@@ -1338,7 +1361,7 @@ function renderScore(){
     state.focus = nowH;
     const res=scoreHour(nowH,state.mode,state.sens);
     $("#reason").textContent = res.caps.length ? cap1(res.caps[0])
-      : (res.score>=82 ? tr("reason_good") : cap1(dominant(res)));
+      : (res.damp ? tr("damp_note") : res.score>=82 ? tr("reason_good") : cap1(dominant(res)));
     setAlert(res.caps);
     $("#anticipBox").classList.remove("show");
     return;
@@ -1381,7 +1404,7 @@ function renderScore(){
 
   const res=scoreHour(state.focus,state.mode,state.sens);
   $("#reason").textContent = res.caps.length ? cap1(res.caps[0])
-    : (res.score>=82 ? tr("reason_good") : cap1(dominant(res)));
+    : (res.damp ? tr("damp_note") : res.score>=82 ? tr("reason_good") : cap1(dominant(res)));
   setAlert(res.caps);
   renderAnticip(today);
 }
