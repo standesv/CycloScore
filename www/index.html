@@ -223,6 +223,14 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .sliderL{width:160px;flex:none;display:flex;flex-direction:column;gap:3px}
 .sliderL .ends{display:flex;justify-content:space-between;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.02em}
 .set-row .s-l .d b{color:var(--accent);font-weight:700}
+/* horaires par jour */
+.dow-wrap{display:flex;gap:5px;padding:10px 12px 4px;flex-wrap:wrap}
+.dowc{flex:1;min-width:38px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);
+  border-radius:9px;padding:7px 2px;font-weight:600;font-size:12.5px}
+.dowc.on{background:var(--accent);color:#fff;border-color:transparent}
+:root[data-theme="dark"] .dowc.on{color:#04232a}
+.beforewrap{display:flex;align-items:center;gap:6px}
+.miniclear{border:1px solid var(--line);background:var(--surface-2);color:var(--muted);border-radius:8px;width:30px;height:30px;font-size:13px;flex:none}
 .seg{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .seg button{border:0;background:transparent;padding:8px 12px;font-weight:600;font-size:13px;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
@@ -413,20 +421,7 @@ body.has-ad .app{padding-bottom:calc(72px + var(--ad-h) + env(safe-area-inset-bo
     <!-- SETTINGS -->
     <section class="view" id="view-set" hidden>
       <div class="sec-h"><h2 data-i18n="workday">Journée de travail</h2><span class="hint" data-i18n="mode_taff_hint">mode vélo taff</span></div>
-      <div class="card set">
-        <div class="set-row">
-          <div class="s-l"><div class="t" data-i18n="set_start">Début de journée</div><div class="d" data-i18n="set_start_d">heure d'arrivée au travail</div></div>
-          <input type="time" id="workStart" class="timein" value="09:00">
-        </div>
-        <div class="set-row">
-          <div class="s-l"><div class="t" data-i18n="set_end">Fin de journée</div><div class="d" data-i18n="set_end_d">heure de départ du travail</div></div>
-          <input type="time" id="workEnd" class="timein" value="17:00">
-        </div>
-        <div class="set-row">
-          <div class="s-l"><div class="t" data-i18n="set_dur">Temps de trajet</div><div class="d" data-i18n="set_dur_d">durée d'un aller simple</div></div>
-          <div class="slider durwrap"><input type="range" id="workDur" min="5" max="60" step="5" value="20"><span id="workDurVal">20 min</span></div>
-        </div>
-      </div>
+      <div class="card set" id="schedCard"></div>
       <div class="sec-h" style="margin-top:4px"><h2 data-i18n="settings">Réglages</h2></div>
       <div class="card set">
         <div class="set-row">
@@ -584,6 +579,12 @@ const STR = {
     set_start:"Début de journée", set_start_d:"heure d'arrivée au travail",
     set_end:"Fin de journée", set_end_d:"heure de départ du travail",
     set_dur:"Temps de trajet", set_dur_d:"durée d'un aller simple",
+    set_before:"Rentrer avant", set_before_d:"optionnel — heure limite d'arrivée au retour", set_before_clear:"Retirer la limite",
+    sched_scope:"Horaires", sched_all:"Tous les jours", sched_perday:"Par jour",
+    sched_daytype:"Ce jour-là", sched_work:"Je roule", sched_rest:"Repos",
+    sched_rest_note:"Jour sans trajet — seul le score du jour est affiché.",
+    rest_day_note:"Jour de repos — pas de trajet prévu aujourd'hui.",
+    dow:["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"],
     settings:"Réglages",
     cold_sens:"Sensibilité au froid", cold_sens_d:"« frileux » relève le seuil de confort",
     rain_tol:"Tolérance à la pluie", strict_left:"à gauche = plus strict", wind_tol:"Tolérance au vent",
@@ -672,6 +673,12 @@ const STR = {
     set_start:"Day start", set_start_d:"arrival time at work",
     set_end:"Day end", set_end_d:"departure time from work",
     set_dur:"Commute time", set_dur_d:"one-way duration",
+    set_before:"Home by", set_before_d:"optional — latest arrival time on return", set_before_clear:"Remove limit",
+    sched_scope:"Hours", sched_all:"Every day", sched_perday:"Per day",
+    sched_daytype:"That day", sched_work:"I ride", sched_rest:"Day off",
+    sched_rest_note:"No commute that day — only the day score is shown.",
+    rest_day_note:"Day off — no commute planned today.",
+    dow:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
     settings:"Settings",
     cold_sens:"Cold sensitivity", cold_sens_d:"'chilly' raises the comfort threshold",
     rain_tol:"Rain tolerance", strict_left:"left = stricter", wind_tol:"Wind tolerance",
@@ -780,8 +787,13 @@ const state = {
   focus: null,                          // heure de référence (trajet en mode taff)
   tripDir: null,                        // "aller" | "retour" (jauge trajet)
   tripSlot: "best",                     // "best" | "early" (créneau de départ choisi)
+  sched: store.get("sched", null),      // horaires par jour {perDay, all, days{0..6}}
+  schedSelDay: 0,                       // jour en cours d'édition dans les réglages
   tab: "score"
 };
+/* migration des anciens horaires uniques vers la structure par jour */
+if(!state.sched){ state.sched = migrateSched(store.get("work", null)); store.set("sched", state.sched); }
+try{ state.schedSelDay = (new Date()).getDay(); }catch(e){}
 
 /* ---- pondérations par mode (cf. cdc §4) ---- */
 const WEIGHTS = {
@@ -1174,16 +1186,28 @@ function dayScore(dayDate, mode, sens){
   return Math.round(0.45*mean + 0.55*worst);
 }
 
-// prochain trajet (mode taff) selon l'heure courante et les horaires de travail
-function nextCommute(){
-  const Hs=parseHM(state.work.start), He=parseHM(state.work.end);
-  const now=state.data.hours[nowIndex()].date;
-  const nowH=hourFloat(now);
-  if(nowH < Hs)  return {dir:"aller",  dayDate:now, winStart:Hs-2, winEnd:Hs};
-  if(nowH < He)  return {dir:"retour", dayDate:now, winStart:He,   winEnd:He+2};
-  const tmr=new Date(now.getTime()+86400000);
-  return {dir:"aller", dayDate:tmr, winStart:Hs-2, winEnd:Hs};
+/* ---- horaires par jour : configuration effective d'une date ---- */
+function migrateSched(w){
+  w=w||{};
+  const base={off:false, start:w.start||"09:00", end:w.end||"17:00", dur:(w.dur||w.duration||20), before:w.before||""};
+  const days={};
+  for(let i=0;i<7;i++){ days[i]=Object.assign({},base,{off:(i===0||i===6)}); } // dimanche & samedi = repos par défaut
+  return {perDay:false, all:Object.assign({},base), days};
 }
+function dayCfg(date){
+  const s=state.sched;
+  const def={off:false,start:"09:00",end:"17:00",dur:20,before:""};
+  if(!s) return def;
+  if(!s.perDay) return Object.assign({}, def, s.all);
+  return Object.assign({}, def, s.days[date.getDay()]||s.all);
+}
+function normalizeCfg(cfg){
+  if(parseHM(cfg.start) > parseHM(cfg.end)){ const t=cfg.start; cfg.start=cfg.end; cfg.end=t; } // arrivée avant départ
+  if(cfg.before && parseHM(cfg.before) <= parseHM(cfg.end)) cfg.before=""; // "rentrer avant" doit suivre le départ
+  if(!(+cfg.dur>0)) cfg.dur=20;
+}
+function curCfg(){ return state.sched.perDay ? state.sched.days[state.schedSelDay] : state.sched.all; }
+function saveSched(){ store.set("sched", state.sched); }
 
 function render(){
   if(!state.data) return;
@@ -1197,52 +1221,46 @@ function render(){
   renderSaved();
 }
 
-/* ---- trajet : direction par défaut, fenêtre, meilleur départ ---- */
+/* ---- trajet : direction par défaut, fenêtre (avec butoir « rentrer avant »), créneaux ---- */
 function defaultTripDir(){
-  const Hs=parseHM(state.work.start);
+  const cfg=dayCfg(state.data.hours[nowIndex()].date);
   const nowH=hourFloat(state.data.hours[nowIndex()].date);
-  return nowH < Hs ? "aller" : "retour";
+  return nowH < parseHM(cfg.start) ? "aller" : "retour";
 }
-function tripWindow(dir){
-  let Hs=parseHM(state.work.start), He=parseHM(state.work.end); const durH=workDuration()/60;
+function tripWindow(dir, cfg){
+  let Hs=parseHM(cfg.start), He=parseHM(cfg.end); const durH=(cfg.dur||20)/60;
   if(Hs>He){ const t=Hs; Hs=He; He=t; }   // garde-fou : horaires inversés
-  if(dir==="aller"){                 // partir à temps pour arriver avant Hs
-    let we=Hs-durH, ws=Hs-2;
-    if(we<ws) ws=we-1;               // trajets très longs (> 2 h)
-    return {ws, we};
-  }
-  return {ws:He, we:He+2};           // retour : fenêtre après la fin de journée
+  if(dir==="aller"){ let we=Hs-durH, ws=Hs-2; if(we<ws) ws=we-1; return {ws, we}; }
+  // retour : fenêtre après la fin de journée, bornée par « rentrer avant » si renseigné
+  let we=He+2;
+  if(cfg.before){ const Hb=parseHM(cfg.before); if(Hb>He){ const last=Hb-durH; if(last<we) we=last; if(we<He) we=He; } }
+  return {ws:He, we};
 }
-function tripBest(dir, dayDate){
-  const w=tripWindow(dir);
-  let best=bestInWindow(dayDate, w.ws, w.we, "taff", state.sens, workDuration());
-  if(best) return Object.assign({}, best, {day:dayDate, nextDay:false});
-  // créneau déjà passé aujourd'hui → on propose le même trajet demain
-  const tmr=new Date(dayDate.getTime()+86400000);
-  best=bestInWindow(tmr, w.ws, w.we, "taff", state.sens, workDuration());
-  if(best) return Object.assign({}, best, {day:tmr, nextDay:true});
-  // dernier repli : fenêtre élargie aujourd'hui
-  best=bestInWindow(dayDate, w.ws-1, w.we+1, "taff", state.sens, workDuration());
-  return best ? Object.assign({}, best, {day:dayDate, nextDay:false}) : null;
-}
-// deux créneaux d'un trajet : le plus tôt (dès l'ouverture de la fenêtre) et le meilleur
+// deux créneaux d'un trajet (plus tôt / meilleur), horaires du jour + repos pris en compte
 function tripOptions(dir, dayDate){
-  const w=tripWindow(dir), dur=workDuration();
-  const pick=(day, ws, we)=>{
-    const cand=state.data.hours.filter(h=>h.date.toDateString()===day.toDateString()
-      && hourFloat(h.date)>=ws-0.01 && hourFloat(h.date)<=we+0.01);
-    if(!cand.length) return null;
-    cand.sort((a,b)=>a.date-b.date);
-    let best=null;
-    cand.forEach(h=>{ const s=rideScore(h.date,dur,"taff",state.sens); if(s!=null && (!best || s>best.score)) best={h,score:s}; });
-    const e=cand[0], es=rideScore(e.date,dur,"taff",state.sens);
-    return best ? {early:{h:e,score:es}, best} : null;
+  const pick=(day)=>{
+    const cfg=dayCfg(day); if(cfg.off) return null;
+    const w=tripWindow(dir,cfg);
+    const scan=(ws,we)=>{
+      const cand=state.data.hours.filter(h=>h.date.toDateString()===day.toDateString()
+        && hourFloat(h.date)>=ws-0.01 && hourFloat(h.date)<=we+0.01);
+      if(!cand.length) return null;
+      cand.sort((a,b)=>a.date-b.date);
+      let best=null; cand.forEach(h=>{ const s=rideScore(h.date,cfg.dur,"taff",state.sens); if(s!=null && (!best||s>best.score)) best={h,score:s}; });
+      const e=cand[0], es=rideScore(e.date,cfg.dur,"taff",state.sens);
+      return best ? {early:{h:e,score:es}, best} : null;
+    };
+    return {scan, w, r:scan(w.ws,w.we)};
   };
-  let r=pick(dayDate, w.ws, w.we), nextDay=false;
-  if(!r){ const tmr=new Date(dayDate.getTime()+86400000); r=pick(tmr, w.ws, w.we); if(r) nextDay=true; }
-  if(!r) r=pick(dayDate, w.ws-1, w.we+1);
-  return r ? {early:r.early, best:r.best, nextDay} : null;
+  const p=pick(dayDate);
+  if(p && p.r) return {early:p.r.early, best:p.r.best, nextDay:false};
+  const tmr=new Date(dayDate.getTime()+86400000);     // créneau passé aujourd'hui → même trajet demain
+  const pt=pick(tmr);
+  if(pt && pt.r) return {early:pt.r.early, best:pt.r.best, nextDay:true};
+  if(p && p.scan){ const r2=p.scan(p.w.ws-1, p.w.we+1); if(r2) return {early:r2.early, best:r2.best, nextDay:false}; } // repli élargi
+  return null;
 }
+function tripRetourBest(dayDate){ const o=tripOptions("retour", dayDate); return o?o.best:null; }
 function renderTripOpts(opts){
   const box=$("#tripOpts");
   if(!opts || !opts.early){ box.innerHTML=""; return; }
@@ -1289,7 +1307,7 @@ function renderAnticip(dayDate){
   // anticipation uniquement prospective : on prévient pour le RETOUR quand on regarde l'ALLER.
   // (sur le retour, l'aller est déjà passé → aucun message.)
   if(state.tripDir!=="aller"){ box.classList.remove("show"); return; }
-  const ob = tripBest("retour", dayDate);
+  const ob = tripRetourBest(dayDate);
   if(!ob){ box.classList.remove("show"); return; }
   const nowKeys = new Set(GEAR.filter(g=>g.modes.includes("taff") && g.test(state.focus,state.sens)).map(g=>g.key));
   const extra = GEAR.filter(g=> g.modes.includes("taff") && CARRY_GEAR.indexOf(g.key)>=0
@@ -1322,6 +1340,21 @@ function renderScore(){
     $("#reason").textContent = res.caps.length ? cap1(res.caps[0])
       : (res.score>=82 ? tr("reason_good") : cap1(dominant(res)));
     setAlert(res.caps);
+    $("#anticipBox").classList.remove("show");
+    return;
+  }
+
+  // ---- jour de repos (mode taff) : une seule jauge, pas de trajet ----
+  if(dayCfg(today).off){
+    $("#gauges").classList.add("solo");
+    $("#tripSwitch").hidden=true; $("#gwrapTrip").hidden=true;
+    $("#tripOpts").innerHTML="";
+    $("#labelDay").textContent = tr("hero_today");
+    $("#subDay").textContent="";
+    state.focus = nowH;
+    const r0=scoreHour(nowH,state.mode,state.sens);
+    $("#reason").textContent = tr("rest_day_note");
+    setAlert(r0.caps);
     $("#anticipBox").classList.remove("show");
     return;
   }
@@ -1625,31 +1658,66 @@ function bindUI(){
   $$("[data-theme-opt]").forEach(b=>b.onclick=()=>setTheme(b.dataset.themeOpt));
   $("#btnReset").onclick=()=>{
     try{ Object.keys(localStorage).filter(k=>k.startsWith("cyclo:")).forEach(k=>localStorage.removeItem(k)); }catch(e){}
-    state.saved=[]; state.sens={cold:0,rain:0,wind:0}; state.work={start:"09:00",end:"17:00",duration:20};
+    state.saved=[]; state.sens={cold:0,rain:0,wind:0};
+    state.sched=migrateSched(null); store.set("sched",state.sched); state.schedSelDay=(new Date()).getDay();
     $("#sCold").value=0; $("#sRain").value=0; $("#sWind").value=0; updateSensState();
-    $("#workStart").value="09:00"; $("#workEnd").value="17:00"; $("#workDur").value=20; $("#workDurVal").textContent="20 min";
+    renderSchedule();
     setTheme("auto"); renderSaved(); render(); toast(tr("toast_reset"));
   };
   const sens=(id,key)=>{ const el=$(id); el.value=state.sens[key];
     el.addEventListener("input",()=>{ state.sens[key]=+el.value; store.set("sens",state.sens); updateSensState(); render(); }); };
   sens("#sCold","cold"); sens("#sRain","rain"); sens("#sWind","wind");
   updateSensState();
-  // horaires de travail + temps de trajet
-  const ws=$("#workStart"), we=$("#workEnd"), wd=$("#workDur"), wdv=$("#workDurVal");
-  ws.value=state.work.start||"09:00"; we.value=state.work.end||"17:00"; wd.value=workDuration();
-  wdv.textContent = workDuration()+" min";
-  const saveWork=()=>{
-    state.work=normalizeWork({start:ws.value||"09:00", end:we.value||"17:00", duration:+wd.value||20});
-    ws.value=state.work.start; we.value=state.work.end;   // reflète l'ordre corrigé
-    wdv.textContent = (+wd.value||20)+" min";
-    store.set("work",state.work); render();
-  };
-  ws.addEventListener("change",saveWork); we.addEventListener("change",saveWork);
-  wd.addEventListener("input",()=>{ wdv.textContent=(+wd.value||20)+" min"; });
-  wd.addEventListener("change",saveWork);
+  // horaires de travail (par jour) + rentrer avant
+  renderSchedule();
   // consentement publicitaire (modifiable après coup)
   $$("[data-ad-opt]").forEach(b=>b.onclick=()=>{ state.adConsent=b.dataset.adOpt; store.set("adConsent",state.adConsent); syncAdSeg(); applyAds(); });
   syncAdSeg();
+}
+/* ---- panneau "Journée de travail" (horaires par jour + rentrer avant) ---- */
+function schedFields(cfg){
+  const bf = cfg.before||"";
+  return `<div class="set-row"><div class="s-l"><div class="t" data-i18n="set_start">Début de journée</div><div class="d" data-i18n="set_start_d">heure d'arrivée au travail</div></div><input type="time" class="timein" data-f="start" value="${cfg.start}"></div>`+
+  `<div class="set-row"><div class="s-l"><div class="t" data-i18n="set_end">Fin de journée</div><div class="d" data-i18n="set_end_d">heure de départ du travail</div></div><input type="time" class="timein" data-f="end" value="${cfg.end}"></div>`+
+  `<div class="set-row"><div class="s-l"><div class="t" data-i18n="set_before">Rentrer avant</div><div class="d" data-i18n="set_before_d">optionnel — heure limite d'arrivée</div></div><div class="beforewrap"><input type="time" class="timein" data-f="before" value="${bf}">${bf?`<button class="miniclear" data-f="beforeclear" aria-label="${tr('set_before_clear')}">✕</button>`:``}</div></div>`+
+  `<div class="set-row"><div class="s-l"><div class="t" data-i18n="set_dur">Temps de trajet</div><div class="d" data-i18n="set_dur_d">durée d'un aller simple</div></div><div class="slider durwrap"><input type="range" data-f="dur" min="5" max="60" step="5" value="${cfg.dur}"><span class="durval">${cfg.dur} min</span></div></div>`;
+}
+function renderSchedule(){
+  const box=$("#schedCard"); if(!box) return;
+  const s=state.sched;
+  let html = `<div class="set-row"><div class="s-l"><div class="t">${tr("sched_scope")}</div></div>`+
+    `<div class="seg" role="group" aria-label="${tr('sched_scope')}">`+
+    `<button data-scope="all" aria-pressed="${!s.perDay}">${tr("sched_all")}</button>`+
+    `<button data-scope="day" aria-pressed="${s.perDay}">${tr("sched_perday")}</button></div></div>`;
+  if(s.perDay){
+    const dow=STR[L].dow, order=[1,2,3,4,5,6,0];
+    html += `<div class="dow-wrap">`+order.map(d=>`<button class="dowc${state.schedSelDay===d?" on":""}" data-dow="${d}">${dow[d]}</button>`).join("")+`</div>`;
+    const cfg=s.days[state.schedSelDay];
+    html += `<div class="set-row"><div class="s-l"><div class="t">${tr("sched_daytype")}</div></div>`+
+      `<div class="seg"><button data-off="0" aria-pressed="${!cfg.off}">${tr("sched_work")}</button>`+
+      `<button data-off="1" aria-pressed="${cfg.off}">${tr("sched_rest")}</button></div></div>`;
+    html += cfg.off ? `<div class="set-row"><div class="s-l"><div class="d">${tr("sched_rest_note")}</div></div></div>` : schedFields(cfg);
+  } else {
+    html += schedFields(s.all);
+  }
+  box.innerHTML=html;
+  // (re)applique les libellés i18n statiques de ce bloc
+  box.querySelectorAll("[data-i18n]").forEach(el=>{ const v=tr(el.getAttribute("data-i18n")); if(v!=null) el.textContent=v; });
+  bindSchedule();
+}
+function bindSchedule(){
+  const box=$("#schedCard");
+  box.querySelectorAll("[data-scope]").forEach(b=>b.onclick=()=>{ state.sched.perDay=(b.dataset.scope==="day"); saveSched(); renderSchedule(); render(); });
+  box.querySelectorAll("[data-dow]").forEach(b=>b.onclick=()=>{ state.schedSelDay=+b.dataset.dow; renderSchedule(); });
+  box.querySelectorAll("[data-off]").forEach(b=>b.onclick=()=>{ curCfg().off=(b.dataset.off==="1"); saveSched(); renderSchedule(); render(); });
+  const cfg=curCfg();
+  box.querySelectorAll('input[data-f="start"],input[data-f="end"],input[data-f="before"]').forEach(el=>{
+    el.addEventListener("change",()=>{ cfg[el.dataset.f]=el.value; normalizeCfg(cfg); saveSched(); renderSchedule(); render(); });
+  });
+  const clr=box.querySelector('[data-f="beforeclear"]'); if(clr) clr.onclick=()=>{ cfg.before=""; saveSched(); renderSchedule(); render(); };
+  const dur=box.querySelector('input[data-f="dur"]'), dv=box.querySelector(".durval");
+  if(dur){ dur.addEventListener("input",()=>{ if(dv) dv.textContent=(+dur.value)+" min"; });
+           dur.addEventListener("change",()=>{ cfg.dur=+dur.value||20; saveSched(); render(); }); }
 }
 function syncAdSeg(){ $$("[data-ad-opt]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.adOpt===state.adConsent)); }
 function sensState(kind, v){
@@ -1664,8 +1732,7 @@ function updateSensState(){
 }
 function syncSettingsInputs(){
   $("#sCold").value=state.sens.cold; $("#sRain").value=state.sens.rain; $("#sWind").value=state.sens.wind;
-  $("#workStart").value=state.work.start; $("#workEnd").value=state.work.end;
-  $("#workDur").value=workDuration(); $("#workDurVal").textContent=workDuration()+" min";
+  renderSchedule();
   updateSensState(); syncAdSeg();
 }
 
@@ -1724,11 +1791,12 @@ function obNext(){ const steps=obSteps(); if(OB.i>=steps.length-1){ obFinish(); 
 function obBack(){ if(OB.i>0){ OB.i--; obShow(); } }
 function obFinish(){
   state.mode = OB.usage==="sport" ? "sport" : "taff";
-  state.work = normalizeWork({start:$("#obStart").value||"09:00", end:$("#obEnd").value||"17:00", duration:+$("#obDur").value||20});
+  const w0=normalizeWork({start:$("#obStart").value||"09:00", end:$("#obEnd").value||"17:00", duration:+$("#obDur").value||20});
+  state.sched = migrateSched(w0); store.set("sched",state.sched);
   state.sens = {cold:+$("#obCold").value||0, rain:+$("#obRain").value||0, wind:+$("#obWind").value||0};
   state.adConsent = OB.consent;
   state.onboarded = true;
-  store.set("mode",state.mode); store.set("work",state.work); store.set("sens",state.sens);
+  store.set("mode",state.mode); store.set("sens",state.sens);
   store.set("adConsent",state.adConsent); store.set("onboarded",true);
   syncSettingsInputs();
   $("#onboard").hidden = true;
@@ -1756,7 +1824,6 @@ function bindOnboarding(){
 
 function boot(){
   applyI18n();
-  state.work = normalizeWork(state.work);   // corrige d'anciens horaires inversés
   bindUI();
   bindOnboarding();
   setMode(state.mode);
