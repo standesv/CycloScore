@@ -83,6 +83,17 @@ main{flex:1;padding:16px;display:flex;flex-direction:column;gap:16px}
   display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--muted);
   background:var(--surface-2);border:1px dashed var(--line);border-radius:10px;padding:8px 11px;
 }
+/* switch Aujourd'hui / Demain */
+.daynav{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px;gap:3px}
+.daynav button{flex:1;border:0;background:transparent;border-radius:999px;padding:6px 8px;color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.1}
+.daynav button b{font-weight:600;font-size:13.5px}
+.daynav button .dd{font-size:11px;color:var(--muted);text-transform:capitalize}
+.daynav button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
+.daynav button[aria-pressed="true"] .dd{color:var(--accent)}
+/* repère visuel quand on regarde demain */
+.view-score-tomo .hero{border-top:3px solid var(--accent)}
+.day.sel{background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
 /* score hero */
 .hero{padding:20px 18px 22px;display:flex;flex-direction:column;align-items:center;text-align:center}
@@ -344,6 +355,10 @@ body.has-ad .app{padding-bottom:calc(72px + var(--ad-h) + env(safe-area-inset-bo
   <main>
     <!-- SCORE -->
     <section class="view" id="view-score">
+      <div class="daynav" id="dayNav" role="group" aria-label="Jour">
+        <button data-day="0" aria-pressed="true"><b data-i18n="day_today">Aujourd'hui</b><span class="dd" id="ddToday"></span></button>
+        <button data-day="1" aria-pressed="false"><b data-i18n="day_tomorrow">Demain</b><span class="dd" id="ddTomorrow"></span></button>
+      </div>
       <div class="badge-sample" id="sampleBadge">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <span data-i18n="sample">Données d'exemple — localise-toi ou cherche une ville pour la météo réelle.</span>
@@ -381,9 +396,9 @@ body.has-ad .app{padding-bottom:calc(72px + var(--ad-h) + env(safe-area-inset-bo
       <div class="sec-h"><h2 data-i18n="gear_title">Matériel conseillé</h2><span class="hint" id="gearHint"></span></div>
       <div class="card gearcard"><div class="gearwrap" id="gear"></div></div>
 
-      <div class="sec-h"><h2 data-i18n="next_hours">Prochaines heures</h2><span class="hint" id="nowLabel"></span></div>
+      <div class="sec-h"><h2 id="nextHoursTitle" data-i18n="next_hours">Prochaines heures</h2><span class="hint" id="nowLabel"></span></div>
       <div class="card hourly">
-        <div class="rangeswitch" role="group" aria-label="Horizon">
+        <div class="rangeswitch" id="rangeSwitch" role="group" aria-label="Horizon">
           <button id="r24" aria-pressed="true">24 h</button>
           <button id="r48" aria-pressed="false">48 h</button>
         </div>
@@ -397,7 +412,7 @@ body.has-ad .app{padding-bottom:calc(72px + var(--ad-h) + env(safe-area-inset-bo
 
     <!-- DETAIL -->
     <section class="view" id="view-detail" hidden>
-      <div class="sec-h"><h2 data-i18n="cond_now">Conditions maintenant</h2><span class="hint" id="detailTime"></span></div>
+      <div class="sec-h"><h2 id="condTitle" data-i18n="cond_now">Conditions maintenant</h2><span class="hint" id="detailTime"></span></div>
       <div class="card cond" id="cond"></div>
       <p class="foot" data-i18n="foot_detail">Chaque barre montre la contribution de la variable au score (plus la barre est courte et rouge, plus elle tire le score vers le bas).</p>
     </section>
@@ -573,6 +588,7 @@ const STR = {
     reason_default:"On récupère les conditions…",
     gear_title:"Matériel conseillé", next_hours:"Prochaines heures", seven_days:"7 jours",
     chart_aria:"Score heure par heure", cond_now:"Conditions maintenant",
+    day_today:"Aujourd'hui", day_tomorrow:"Demain", tomorrow_preview:"Aperçu de demain", cond_tomorrow:"Conditions demain",
     foot_detail:"Chaque barre montre la contribution de la variable au score (plus la barre est courte et rouge, plus elle tire le score vers le bas).",
     places:"Lieux", search_ph:"Chercher une ville…", ok:"OK", locate_me:"Me localiser", saved_title:"Enregistrés",
     workday:"Journée de travail", mode_taff_hint:"mode vélo taff",
@@ -667,6 +683,7 @@ const STR = {
     reason_default:"Fetching conditions…",
     gear_title:"Recommended gear", next_hours:"Next hours", seven_days:"7 days",
     chart_aria:"Hourly score", cond_now:"Current conditions",
+    day_today:"Today", day_tomorrow:"Tomorrow", tomorrow_preview:"Tomorrow's overview", cond_tomorrow:"Tomorrow's conditions",
     foot_detail:"Each bar shows how much the variable contributes to the score (the shorter and redder the bar, the more it pulls the score down).",
     places:"Places", search_ph:"Search a city…", ok:"OK", locate_me:"Use my location", saved_title:"Saved",
     workday:"Workday", mode_taff_hint:"bike commute mode",
@@ -787,6 +804,7 @@ const state = {
   focus: null,                          // heure de référence (trajet en mode taff)
   tripDir: null,                        // "aller" | "retour" (jauge trajet)
   tripSlot: "best",                     // "best" | "early" (créneau de départ choisi)
+  dayOffset: 0,                         // 0 = aujourd'hui, 1 = demain
   sched: store.get("sched", null),      // horaires par jour {perDay, all, days{0..6}}
   schedSelDay: 0,                       // jour en cours d'édition dans les réglages
   tab: "score"
@@ -1341,25 +1359,50 @@ function renderAnticip(dayDate){
   box.classList.add("show");
 }
 
-function renderScore(){
-  const nowH = state.data.hours[nowIndex()];
-  const today = nowH.date;
+/* ---- jour sélectionné (aujourd'hui / demain) ---- */
+function refDate(){ const d=new Date(state.data.hours[nowIndex()].date); if(state.dayOffset>0) d.setDate(d.getDate()+state.dayOffset); return d; }
+function dayHours(d){ return state.data.hours.filter(h=>h.date.toDateString()===d.toDateString()); }
+function repHour(d){   // heure représentative d'un jour (focus si même jour, sinon ~13 h)
+  if(state.focus && state.focus.date.toDateString()===d.toDateString()) return state.focus;
+  const hs=dayHours(d);
+  return hs.find(h=>h.date.getHours()>=13 && h.isDay) || hs.find(h=>h.date.getHours()>=13) || hs[0] || state.data.hours[nowIndex()];
+}
+function updateDayNav(){
+  const d0=state.data.hours[nowIndex()].date;
+  const fmt=d=>d.toLocaleDateString(LOCALE,{weekday:"short",day:"numeric"});
+  const t=$("#ddToday"), m=$("#ddTomorrow");
+  if(t) t.textContent=fmt(d0);
+  if(m){ const dn=new Date(d0); dn.setDate(dn.getDate()+1); m.textContent=fmt(dn); }
+  $$("#dayNav button").forEach(b=>b.setAttribute("aria-pressed", (+b.dataset.day)===state.dayOffset));
+  const v=$("#view-score"); if(v) v.classList.toggle("view-score-tomo", state.dayOffset>0);
+}
 
-  // ---- jauge du jour (toujours) ----
-  let dayVal = dayScore(today, state.mode, state.sens);
-  if(dayVal==null) dayVal = scoreHour(nowH, state.mode, state.sens).score;
+function renderScore(){
+  updateDayNav();
+  const nowH = state.data.hours[nowIndex()];
+  const sel = refDate();
+  const base = state.dayOffset>0 ? repHour(sel) : nowH;   // heure de référence du jour choisi
+  const tomo = state.dayOffset>0;
+
+  // ---- jauge du jour ----
+  let dayVal = dayScore(sel, state.mode, state.sens);
+  if(dayVal==null) dayVal = scoreHour(base, state.mode, state.sens).score;
   const bDay = paintGauge("#gaugeDay","#scoreDay",dayVal);
   $("#verdictDay").textContent = bDay.word;
-  $("#nowLabel").textContent = tr("now_prefix") + nowH.date.toLocaleTimeString(LOCALE,{hour:"2-digit",minute:"2-digit"});
+  // en-tête courbe : "Prochaines heures" (aujourd'hui) ou "Aperçu de demain"
+  $("#nextHoursTitle").textContent = tomo ? tr("tomorrow_preview") : tr("next_hours");
+  $("#nowLabel").textContent = tomo ? cap1(sel.toLocaleDateString(LOCALE,{weekday:"long",day:"numeric"}))
+    : tr("now_prefix") + nowH.date.toLocaleTimeString(LOCALE,{hour:"2-digit",minute:"2-digit"});
+  $("#rangeSwitch").style.display = tomo ? "none" : "";
 
   // ---- sortie sportive : une seule jauge ----
   if(state.mode!=="taff"){
     $("#gauges").classList.add("solo");
-    $("#tripSwitch").hidden=true; $("#gwrapTrip").hidden=true;
-    $("#labelDay").textContent = tr("hero_today");
+    $("#tripSwitch").hidden=true; $("#gwrapTrip").hidden=true; $("#tripOpts").innerHTML="";
+    $("#labelDay").textContent = tomo ? tr("day_tomorrow") : tr("hero_today");
     $("#subDay").textContent="";
-    state.focus = nowH;
-    const res=scoreHour(nowH,state.mode,state.sens);
+    state.focus = base;
+    const res=scoreHour(base,state.mode,state.sens);
     $("#reason").textContent = res.caps.length ? cap1(res.caps[0])
       : (res.damp ? tr("damp_note") : res.score>=82 ? tr("reason_good") : cap1(dominant(res)));
     setAlert(res.caps);
@@ -1368,14 +1411,13 @@ function renderScore(){
   }
 
   // ---- jour de repos (mode taff) : une seule jauge, pas de trajet ----
-  if(dayCfg(today).off){
+  if(dayCfg(sel).off){
     $("#gauges").classList.add("solo");
-    $("#tripSwitch").hidden=true; $("#gwrapTrip").hidden=true;
-    $("#tripOpts").innerHTML="";
-    $("#labelDay").textContent = tr("hero_today");
+    $("#tripSwitch").hidden=true; $("#gwrapTrip").hidden=true; $("#tripOpts").innerHTML="";
+    $("#labelDay").textContent = tomo ? tr("day_tomorrow") : tr("hero_today");
     $("#subDay").textContent="";
-    state.focus = nowH;
-    const r0=scoreHour(nowH,state.mode,state.sens);
+    state.focus = base;
+    const r0=scoreHour(base,state.mode,state.sens);
     $("#reason").textContent = tr("rest_day_note");
     setAlert(r0.caps);
     $("#anticipBox").classList.remove("show");
@@ -1389,24 +1431,24 @@ function renderScore(){
   $("#labelTrip").textContent = tr("gauge_trip");
   $("#subDay").textContent="";
 
-  if(state.tripDir==null) state.tripDir = defaultTripDir();
+  if(state.tripDir==null) state.tripDir = tomo ? "aller" : defaultTripDir();
   $("#tsAller").setAttribute("aria-pressed", state.tripDir==="aller");
   $("#tsRetour").setAttribute("aria-pressed", state.tripDir==="retour");
 
-  const opts = tripOptions(state.tripDir, today);
-  const sel = opts ? (state.tripSlot==="early" ? opts.early : opts.best) : null;
-  const tripVal = sel ? sel.score : null;
+  const opts = tripOptions(state.tripDir, sel);
+  const selO = opts ? (state.tripSlot==="early" ? opts.early : opts.best) : null;
+  const tripVal = selO ? selO.score : null;
   const bTrip = paintGauge("#gaugeTrip","#scoreTrip",tripVal);
   $("#verdictTrip").textContent = tripVal==null ? "—" : bTrip.word;
 
-  state.focus = sel ? sel.h : nowH;
+  state.focus = selO ? selO.h : base;
   renderTripOpts(opts);
 
   const res=scoreHour(state.focus,state.mode,state.sens);
   $("#reason").textContent = res.caps.length ? cap1(res.caps[0])
     : (res.damp ? tr("damp_note") : res.score>=82 ? tr("reason_good") : cap1(dominant(res)));
   setAlert(res.caps);
-  renderAnticip(today);
+  renderAnticip(sel);
 }
 
 function renderGear(){
@@ -1422,6 +1464,12 @@ function renderGear(){
   box.innerHTML = items.map(g => `<span class="chip">${gearCheck()}${tr(g.key)}</span>`).join("");
 }
 
+function seriesSelected(){
+  if(state.dayOffset>0){                         // demain : la journée complète
+    return dayHours(refDate()).map(h=>({h, s:scoreHour(h, state.mode, state.sens).score}));
+  }
+  return seriesFromNow();
+}
 function seriesFromNow(){
   const i = nowIndex();
   const hrs = state.data.hours.slice(i, i+state.range+1);
@@ -1432,7 +1480,7 @@ function renderHourly(){
   const svg = $("#chart");
   const W = 480, Hh = 150, padL=6, padR=6, padT=14, padB=22;
   svg.setAttribute("viewBox", `0 0 ${W} ${Hh}`);
-  const data = seriesFromNow();
+  const data = seriesSelected();
   if(data.length<2){ svg.innerHTML=""; return; }
   const n = data.length;
   const x = k => padL + (W-padL-padR) * (k/(n-1));
@@ -1453,10 +1501,10 @@ function renderHourly(){
   // meilleures fenêtres (≥70 contiguës, en journée).
   // En mode taff, on reste sur AUJOURD'HUI (cohérent avec le trajet) ; le lendemain
   // n'est proposé qu'en sortie sportive.
-  const todayStr = state.data.hours[nowIndex()].date.toDateString();
+  const refStr = refDate().toDateString();
   let best=null, cur=null;
   data.forEach((p,k)=>{
-    const sameDayOk = state.mode!=="taff" || p.h.date.toDateString()===todayStr;
+    const sameDayOk = state.mode!=="taff" || p.h.date.toDateString()===refStr;
     if(p.s>=70 && p.h.isDay && sameDayOk){ if(!cur) cur={a:k,b:k}; else cur.b=k; }
     else { if(cur){ if(!best || (cur.b-cur.a)>(best.b-best.a)) best=cur; cur=null; } }
   });
@@ -1475,8 +1523,8 @@ function renderHourly(){
     if(hr%6===0){ ticks += `<text x="${x(k).toFixed(1)}" y="${Hh-6}" text-anchor="middle">${hr}h</text>`; }
   });
 
-  // point "maintenant"
-  const now0 = `<circle cx="${x(0).toFixed(1)}" cy="${y(data[0].s).toFixed(1)}" r="3.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>`;
+  // point "maintenant" (uniquement sur aujourd'hui)
+  const now0 = state.dayOffset>0 ? "" : `<circle cx="${x(0).toFixed(1)}" cy="${y(data[0].s).toFixed(1)}" r="3.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>`;
 
   svg.innerHTML =
     bg +
@@ -1510,7 +1558,7 @@ function renderDaily(){
     const b=band(avg==null?0:avg);
     const w=wmo(d.code);
     const name=d.date.toLocaleDateString(LOCALE,{weekday:"short"});
-    const row=document.createElement("div"); row.className="day";
+    const row=document.createElement("div"); row.className="day"+(d.date.toDateString()===refDate().toDateString()?" sel":"");
     row.innerHTML=
       `<span class="d-name">${name}</span>`+
       `<span class="d-ic">${weatherIcon(w.cat)}</span>`+
@@ -1522,8 +1570,9 @@ function renderDaily(){
 }
 
 function renderDetail(){
-  const i=nowIndex(); const h=state.data.hours[i];
+  const h = state.dayOffset>0 ? repHour(refDate()) : state.data.hours[nowIndex()];
   const res=scoreHour(h,state.mode,state.sens);
+  const ct=$("#condTitle"); if(ct) ct.textContent = state.dayOffset>0 ? tr("cond_tomorrow") : tr("cond_now");
   $("#detailTime").textContent = h.date.toLocaleString(LOCALE,{weekday:"short",hour:"2-digit",minute:"2-digit"});
   const rows=[
     {ic:"rain", l:tr("det_precip"), v:`${h.rain.toFixed(1)} mm · ${h.prob}%`, s:res.sub.rain},
@@ -1671,6 +1720,7 @@ function bindUI(){
   $("#mSport").onclick=()=>setMode("sport");
   $("#tsAller").onclick=()=>{ state.tripDir="aller"; render(); };
   $("#tsRetour").onclick=()=>{ state.tripDir="retour"; render(); };
+  $$("#dayNav button").forEach(b=>b.onclick=()=>{ state.dayOffset=+b.dataset.day; render(); });
   $("#r24").onclick=()=>setRange(24);
   $("#r48").onclick=()=>setRange(48);
   $("#btnRefresh").onclick=()=>{ if(state.loc) loadWeather(state.loc); else go("places"); };
